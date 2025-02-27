@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "calcite"
+version = "0.1.0"
+dependencies = ["numpy", "numba"]
+authors = [{ name = "Jewels", email = "jewels@jewels86.me" }]
+maintainers = [{ name = "Jewels", email = "jewels@jewels86.me" }]
+description = "Advanced computational modeling for the microscopic world in Python."
+readme = "README.md"
+license = { file = "LICENSE.md" }
+keywords = ["microscopic", "quantum-mechanics", "engine", "particle-physics"]
+classifiers = [
+	"Development Status :: 4 - Beta"
+]
+
+[project.urls]
+Homepage = "https://jewels86.me/solutions?s=calcite"
+Documentation = "https://jewels86.gitbook.io/calcite"
+Repository = "https://github.com/jewels86/calcite"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["calcite*"]
