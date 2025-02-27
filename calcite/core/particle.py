@@ -27,3 +27,7 @@ class Particle:
     "The velocities of the particle in m/s."
     momenta: np.ndarray
     "The momenta of the particle in GeV/c."
+    energies: np.ndarray
+    "The energies of the particle in GeV."
+
+    
