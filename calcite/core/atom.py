@@ -32,19 +32,21 @@ atom_spec = [
     ('protons', types.ListType(Proton)),
     ('neutrons', types.ListType(Neutron)),
     ('electrons', types.ListType(Electron)),
-    ('orbitals', types.DictType(types.Tuple((int32, int32, int32)), types.Optional(Orbital.class_type.instance_type)))
+    ('orbitals', types.DictType(types.Tuple((int32, int32, int32)), int32)),
+    ('_orbitals', types.ListType(Orbital))
 ]
 
 @jitclass(atom_spec)
 class Atom:
     def __init__(self, protons, neutrons):
-        self.protons = protons if isinstance(protons, list) else typed.List([Proton() for _ in range(protons)])
-        self.neutrons = neutrons if isinstance(neutrons, list) else typed.List([Neutron() for _ in range(neutrons)])
+        self.protons = typed.List([Proton() for _ in range(protons)])
+        self.neutrons = typed.List([Neutron() for _ in range(neutrons)])
         self.electrons = typed.List.empty_list(Electron)
         self.orbitals = typed.Dict.empty(
             key_type=types.Tuple((int32, int32, int32)),
-            value_type=Orbital
+            value_type=int32
         )
+        self._orbitals = typed.List.empty_list(Orbital)
 
     def configure(self, n_electrons: int):
         order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
@@ -53,8 +55,9 @@ class Atom:
         for n, l in order:
             for m in range(-l, l+1):
                 if (n, l, m) not in self.orbitals:
-                    self.orbitals[(n, l, m)] = Orbital(n=n, l=l, m=m, electrons=[])
-                orbital = self.orbitals[(n, l, m)]
+                    self.orbitals[(n, l, m)] = len(self._orbitals)
+                    self._orbitals.append(Orbital(n=n, l=l, m=m, electrons=[]))
+                orbital = self._orbitals[self.orbitals[(n, l, m)]]
                 for spin in states:
                     if added < n_electrons and orbital.add(spin):
                         self.electrons.append(orbital.electrons[-1])
