@@ -15,12 +15,12 @@ particle_spec = [
 
 @jitclass(particle_spec)
 class Particle:
-    def __init__(self, mass, charge, spin, momentum, energy, color='white'):
+    def __init__(self, mass: float, charge: float, spin: float, momentum: np.ndarray = None, energy: float = 0, color='white'):
         self.mass = mass
         self.charge = charge
         self.spin = spin
-        self.momentum = momentum
-        self.energy = energy
+        self.momentum = momentum if momentum is not None else np.zeros(3)
+        self.energy = energy if energy > 0 else self.mass
         self.color = color
 
 composite_particle_spec = [
@@ -34,19 +34,23 @@ class CompositeParticle:
         self.momentum = momentum
         self.quarks = quarks
 
-    
+    @property
     def mass(self):
         return sum([quark.mass for quark in self.quarks])
     
+    @property
     def charge(self):
         return sum([quark.charge for quark in self.quarks])
     
+    @property
     def spin(self):
         return sum([quark.spin for quark in self.quarks])
     
+    @property
     def energy(self):
-        return self.mass()
+        return self.mass
 
+    @property
     def baryon(self):
         return len(self.quarks) // 3
 
@@ -59,7 +63,13 @@ electron_spec = particle_spec + [
 @jitclass(electron_spec)
 class Electron:
     def __init__(self, momentum=np.zeros(3), energy=0, n=1, l=0, m=0):
-        super().__init__(1.0, -1.0, 0.5, momentum, energy)
+        self.mass = 1.0
+        self.charge = -1.0
+        self.spin = 0.5
+        self.momentum = momentum
+        self.energy = energy if energy > 0 else self.mass
+        self.color = 'white'
+
         self.n = n
         self.l = l
         self.m = m
@@ -69,14 +79,13 @@ proton_spec = composite_particle_spec
 @jitclass(proton_spec)
 class Proton:
     def __init__(self, momentum=np.zeros(3)):
-        super().__init__(momentum, [up_quark(), up_quark(), down_quark()])
+        self.momentum = momentum
+        self.quarks = [up_quark(), up_quark(), down_quark()]
 
 neutron_spec = composite_particle_spec
 
 @jitclass(neutron_spec)
 class Neutron:
     def __init__(self, momentum=np.zeros(3)):
-        super().__init__(momentum, [up_quark(), down_quark(), down_quark()])
-
-def create_particles(particle_type: type, n: int) -> list:
-    return [particle_type() for _ in range(n)]
+        self.momentum = momentum
+        self.quarks = [up_quark(), down_quark(), down_quark()]

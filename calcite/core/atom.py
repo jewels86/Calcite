@@ -4,13 +4,14 @@ from calcite.core.particle import Electron, Proton, Neutron
 import calcite.constants as constants
 from numba import njit, float64, int32, types, typed
 from numba.experimental import jitclass
+import numba
+
 
 orbital_spec = [
     ('n', int32),
     ('l', int32),
     ('m', int32),
-    ('electrons', types.ListType(Electron)),
-    ('first', types.boolean)
+    ('electrons', types.ListType(Electron))
 ]
 
 @jitclass(orbital_spec)
@@ -31,16 +32,19 @@ atom_spec = [
     ('protons', types.ListType(Proton)),
     ('neutrons', types.ListType(Neutron)),
     ('electrons', types.ListType(Electron)),
-    ('orbitals', types.DictType(types.UniTuple(int32, 3), Orbital))
+    ('orbitals', types.DictType(types.Tuple((int32, int32, int32)), types.Optional(Orbital.class_type.instance_type)))
 ]
 
 @jitclass(atom_spec)
 class Atom:
     def __init__(self, protons, neutrons):
-        self.protons = protons
-        self.neutrons = neutrons
-        self.electrons = typed.List()
-        self.orbitals = typed.Dict()
+        self.protons = protons if isinstance(protons, list) else typed.List([Proton() for _ in range(protons)])
+        self.neutrons = neutrons if isinstance(neutrons, list) else typed.List([Neutron() for _ in range(neutrons)])
+        self.electrons = typed.List.empty_list(Electron)
+        self.orbitals = typed.Dict.empty(
+            key_type=types.Tuple((int32, int32, int32)),
+            value_type=Orbital
+        )
 
     def configure(self, n_electrons: int):
         order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
@@ -91,18 +95,22 @@ class Atom:
                 return True
         return False
 
+    @property
     def mass(self):
         return sum([proton.mass for proton in self.protons]) \
             + sum([neutron.mass for neutron in self.neutrons]) \
             + self.electrons * constants.ELECTRON_MASS
     
+    @property
     def atomic_number(self):
         return len(self.protons)
     
+    @property
     def charge(self):
         return sum([proton.charge for proton in self.protons]) \
             - self.electrons
     
+    @property
     def spin(self):
         return sum([proton.spin for proton in self.protons]) \
             + sum([neutron.spin for neutron in self.neutrons]) \
