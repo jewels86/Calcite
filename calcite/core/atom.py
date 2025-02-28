@@ -2,31 +2,46 @@ import numpy as np
 from dataclasses import dataclass, field
 from calcite.core.particle import Electron, Proton, Neutron
 import calcite.constants as constants
-from numba import njit, typed
+from numba import njit, float64, int32, types, typed
+from numba.experimental import jitclass
 
-@dataclass
+orbital_spec = [
+    ('n', int32),
+    ('l', int32),
+    ('m', int32),
+    ('electrons', types.ListType(Electron)),
+    ('first', types.boolean)
+]
+
+@jitclass(orbital_spec)
 class Orbital:
-    n: int
-    l: int
-    m: int
-    electrons: typed.List[Electron]
-    first: bool = False
+    def __init__(self, n, l, m, electrons):
+        self.n = n
+        self.l = l
+        self.m = m
+        self.electrons = electrons
 
-    @njit
     def add(self, spin: float):
         if len(self.electrons) < 2 and spin not in [electron.spin for electron in self.electrons]:
             self.electrons.append(Electron(n=self.n, l=self.l, m=self.m, spin=spin))
             return True
         return False
 
-@dataclass
-class Atom:
-    protons: typed.List[Proton]
-    neutrons: typed.List[Neutron]
-    electrons: typed.List[Electron] = field(default_factory=typed.List)
-    orbitals: typed.Dict[tuple[int, int, int], Orbital] = field(default_factory=typed.Dict)
+atom_spec = [
+    ('protons', types.ListType(Proton)),
+    ('neutrons', types.ListType(Neutron)),
+    ('electrons', types.ListType(Electron)),
+    ('orbitals', types.DictType(types.UniTuple(int32, 3), Orbital))
+]
 
-    @njit
+@jitclass(atom_spec)
+class Atom:
+    def __init__(self, protons, neutrons):
+        self.protons = protons
+        self.neutrons = neutrons
+        self.electrons = typed.List()
+        self.orbitals = typed.Dict()
+
     def configure(self, n_electrons: int):
         order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
         added = 0
@@ -43,7 +58,6 @@ class Atom:
             if added >= n_electrons:
                 return
             
-    @njit
     def add_electron(self, electron: Electron):
         for orbital in self.orbitals.values():
             if orbital.add(electron.spin):
@@ -51,7 +65,6 @@ class Atom:
                 return True
         return False
     
-    @njit
     def remove_electron(self):
         if self.electrons:
             electron = self.electrons.pop()
@@ -60,7 +73,6 @@ class Atom:
             return electron
         return None
     
-    @njit
     def covalent_bond(self, atom: "Atom"):
         for orbital in self.orbitals.values():
             if len(orbital.electrons) == 1:
@@ -71,7 +83,6 @@ class Atom:
                         return True
         return False
 
-    @njit
     def ionic_bond(self, atom: "Atom"):
         if self.charge() <= 0 and atom.charge() >= 0:
             electron = self.remove_electron()
@@ -80,22 +91,18 @@ class Atom:
                 return True
         return False
 
-    @njit
     def mass(self):
         return sum([proton.mass for proton in self.protons]) \
             + sum([neutron.mass for neutron in self.neutrons]) \
             + self.electrons * constants.ELECTRON_MASS
     
-    @njit
     def atomic_number(self):
         return len(self.protons)
     
-    @njit
     def charge(self):
         return sum([proton.charge for proton in self.protons]) \
             - self.electrons
     
-    @njit
     def spin(self):
         return sum([proton.spin for proton in self.protons]) \
             + sum([neutron.spin for neutron in self.neutrons]) \

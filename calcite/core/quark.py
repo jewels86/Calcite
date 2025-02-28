@@ -1,12 +1,22 @@
-from dataclasses import dataclass
+from numba import float64, int32, types
+from numba.experimental import jitclass
 
-@dataclass
+spec = [
+    ('type', types.string),
+    ('charge', float64),
+    ('mass', float64),
+    ('spin', float64),
+    ('color', types.string)
+]
+
+@jitclass(spec)
 class Quark:
-    type: str
-    charge: float
-    mass: float
-    spin: float
-    color: str = 'white'
+    def __init__(self, type, charge, mass, spin, color='white'):
+        self.type = type
+        self.charge = charge
+        self.mass = mass
+        self.spin = spin
+        self.color = color
 
 def up_quark(color='red'):
     return Quark('up', 2/3, 0.002, 0.5, color)

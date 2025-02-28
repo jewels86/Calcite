@@ -1,86 +1,82 @@
 import numpy as np
 from dataclasses import dataclass, field
 from calcite.core.quark import up_quark, down_quark, Quark
-from numba import njit
+from numba import njit, float64, int32, types
+from numba.experimental import jitclass
 
-@dataclass
+particle_spec = [
+    ('mass', float64),
+    ('charge', float64),
+    ('spin', float64),
+    ('momentum', float64[:]),
+    ('energy', float64),
+    ('color', types.string)
+]
+
+@jitclass(particle_spec)
 class Particle:
-    mass: float
-    "The mass of the particle in atomic mass units."
-    charge: float
-    spin: float
-    momentum: np.ndarray
-    energy: float
+    def __init__(self, mass, charge, spin, momentum, energy, color='white'):
+        self.mass = mass
+        self.charge = charge
+        self.spin = spin
+        self.momentum = momentum
+        self.energy = energy
+        self.color = color
 
-    color: str = 'white'
+composite_particle_spec = [
+    ('momentum', float64[:]),
+    ('quarks', types.ListType(Quark))
+]
 
-@dataclass
+@jitclass(composite_particle_spec)
 class CompositeParticle:
-    momentum: np.ndarray
-    quarks: list[Quark] = field(default_factory=list)
+    def __init__(self, momentum, quarks):
+        self.momentum = momentum
+        self.quarks = quarks
 
-    @njit
+    
     def mass(self):
         return sum([quark.mass for quark in self.quarks])
     
-    @njit
     def charge(self):
         return sum([quark.charge for quark in self.quarks])
     
-    @njit
     def spin(self):
         return sum([quark.spin for quark in self.quarks])
     
-    @njit
     def energy(self):
         return self.mass()
 
-    @njit
     def baryon(self):
         return len(self.quarks) // 3
 
-@dataclass
-class Electron(Particle):
-    n: int = 1
-    l: int = 0
-    m: int = 0
+electron_spec = particle_spec + [
+    ('n', int32),
+    ('l', int32),
+    ('m', int32)
+]
 
-    def __init__(self, momentum: np.ndarray = np.zeros(3), energy: float = 0, 
-                 n: int = 1, l: int = 0, m: int = 0):
-        super().__init__(
-            mass=1.0,
-            charge=-1.0,
-            spin=0.5,
-            momentum=momentum,
-            energy=energy,
-        )
+@jitclass(electron_spec)
+class Electron:
+    def __init__(self, momentum=np.zeros(3), energy=0, n=1, l=0, m=0):
+        super().__init__(1.0, -1.0, 0.5, momentum, energy)
         self.n = n
         self.l = l
         self.m = m
 
-@dataclass
-class Proton(CompositeParticle):
-    def __init__(self, momentum: np.ndarray = np.zeros(3)):
-        super().__init__(
-            momentum=momentum,
-            quarks=[
-                up_quark(),
-                up_quark(),
-                down_quark()
-            ]
-        )
+proton_spec = composite_particle_spec
 
-@dataclass
-class Neutron(CompositeParticle):
-    def __init__(self, momentum: np.ndarray = np.zeros(3)):
-        super().__init__(
-            momentum=momentum,
-            quarks=[
-                up_quark(),
-                down_quark(),
-                down_quark()
-            ]
-        )
+@jitclass(proton_spec)
+class Proton:
+    def __init__(self, momentum=np.zeros(3)):
+        super().__init__(momentum, [up_quark(), up_quark(), down_quark()])
+
+neutron_spec = composite_particle_spec
+
+@jitclass(neutron_spec)
+class Neutron:
+    def __init__(self, momentum=np.zeros(3)):
+        super().__init__(momentum, [up_quark(), down_quark(), down_quark()])
 
 def create_particles(particle_type: type, n: int) -> list:
     return [particle_type() for _ in range(n)]
