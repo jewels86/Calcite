@@ -1,8 +1,11 @@
 import numpy as np
 from dataclasses import dataclass, field
 from calcite.core.quark import up_quark, down_quark, Quark
-from numba import njit, float64, int32, types
+from calcite.constants import PROTON_QUARKS, NEUTRON_QUARKS
+from numba import njit, float64, int32, types, typed, typeof
 from numba.experimental import jitclass
+
+quark_type = typeof(up_quark())
 
 particle_spec = [
     ('mass', float64),
@@ -80,7 +83,10 @@ proton_spec = composite_particle_spec
 class Proton:
     def __init__(self, momentum=np.zeros(3)):
         self.momentum = momentum
-        self.quarks = [up_quark(), up_quark(), down_quark()]
+        self.quarks = typed.List.empty_list(quark_type)
+        self.quarks.append(up_quark())
+        self.quarks.append(up_quark())
+        self.quarks.append(down_quark())
 
 neutron_spec = composite_particle_spec
 
@@ -88,4 +94,7 @@ neutron_spec = composite_particle_spec
 class Neutron:
     def __init__(self, momentum=np.zeros(3)):
         self.momentum = momentum
-        self.quarks = [up_quark(), down_quark(), down_quark()]
+        self.quarks = typed.List.empty_list(quark_type)
+        self.quarks.append(up_quark())
+        self.quarks.append(down_quark())
+        self.quarks.append(down_quark())
