@@ -53,7 +53,7 @@ class Atom:
         added = 0
         states = [0.5, -0.5]
         for n, l in order:
-            for m in range(-l, l+1):
+            for m in range(-l, l + 1):
                 if (n, l, m) not in self.orbitals:
                     self.orbitals[(n, l, m)] = len(self._orbitals)
                     self._orbitals.append(Orbital(n=n, l=l, m=m, electrons=[]))

@@ -1,7 +1,6 @@
 import numpy as np
 from dataclasses import dataclass, field
-from calcite.core.quark import up_quark, down_quark, Quark
-from calcite.constants import PROTON_QUARKS, NEUTRON_QUARKS
+from calcite.core.quark import up_quark, down_quark, quark_type
 from numba import njit, float64, int32, types, typed, typeof
 from numba.experimental import jitclass
 
@@ -28,7 +27,7 @@ class Particle:
 
 composite_particle_spec = [
     ('momentum', float64[:]),
-    ('quarks', types.ListType(Quark))
+    ('quarks', types.ListType(quark_type))
 ]
 
 @jitclass(composite_particle_spec)

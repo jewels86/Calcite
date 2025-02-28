@@ -1,4 +1,4 @@
-from numba import float64, int32, types, njit
+from numba import float64, int32, types, njit, typeof
 from numba.experimental import jitclass
 
 spec = [
@@ -41,3 +41,5 @@ def top_quark(color='magenta'):
 @njit
 def bottom_quark(color='yellow'):
     return Quark('bottom', -1/3, 4.18, 0.5, color)
+
+quark_type = typeof(up_quark())
