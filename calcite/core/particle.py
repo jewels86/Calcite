@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 from abc import abstractmethod
-import calcite
+from calcite.core.quark import up_quark, down_quark, Quark
 
 @dataclass
 class Particle:
@@ -16,19 +16,31 @@ class Particle:
 
 @dataclass
 class CompositeParticle:
-    mass: float
-    charge: float
-    spin: float
     momentum: np.ndarray
-    energy: float
-    quark_content: dict = {"u": 0, "d": 0, "s": 0, "c": 0, "b": 0, "t": 0}
+    quarks: list[Quark] = []
+
+    def mass(self):
+        return sum([quark.mass for quark in self.quarks])
+    
+    def charge(self):
+        return sum([quark.charge for quark in self.quarks])
+    
+    def spin(self):
+        return sum([quark.spin for quark in self.quarks])
+    
+    def energy(self):
+        return self.mass()
 
     def baryon(self):
-        
+        return len(self.quarks) // 3
 
 @dataclass
 class Electron(Particle):
-    def __init__(self, momentum: np.ndarray = np.zeros(3), energy: float = 0):
+    n: int = 1
+    l: int = 0
+    m: int = 0
+    def __init__(self, momentum: np.ndarray = np.zeros(3), energy: float = 0, 
+                 n: int = 1, l: int = 0, m: int = 0):
         super().__init__(
             mass=1.0,
             charge=-1.0,
@@ -36,27 +48,30 @@ class Electron(Particle):
             momentum=momentum,
             energy=energy,
         )
+        self.n = n
+        self.l = l
+        self.m = m
 
 @dataclass
 class Proton(CompositeParticle):
-    def __init__(self, momentum: np.ndarray = np.zeros(3), energy: float = 0):
+    def __init__(self, momentum: np.ndarray = np.zeros(3)):
         super().__init__(
-            mass=1836.1627,
-            charge=1.0,
-            spin=0.5,
             momentum=momentum,
-            energy=energy,
-            quark_content={'u': 2, 'd': 1}
+            quark_content=[
+                up_quark(),
+                up_quark(),
+                down_quark()
+            ]
         )
 
 @dataclass
 class Neutron(CompositeParticle):
-    def __init__(self, momentum: np.ndarray = np.zeros(3), energy: float = 0):
+    def __init__(self, momentum: np.ndarray = np.zeros(3)):
         super().__init__(
-            mass=1838.6837,
-            charge=0.0,
-            spin=0.5,
             momentum=momentum,
-            energy=energy,
-            quark_content={'u': 1, 'd': 2}
+            quark_content=[
+                up_quark(),
+                down_quark(),
+                down_quark()
+            ]
         )
