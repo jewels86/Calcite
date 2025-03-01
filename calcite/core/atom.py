@@ -4,7 +4,7 @@ from calcite.core.particle import Electron, Proton, Neutron
 import calcite.constants as constants
 from numba import njit, float64, int32, types, typed
 from numba.experimental import jitclass
-from numba.types import UniTuple
+from numba.types import Tuple
 
 
 orbital_spec = [
@@ -28,20 +28,21 @@ class Orbital:
             return True
         return False
 
-orbital_key_type = UniTuple(types.int32, 3)
+orbital_key_type = Tuple((int32, int32, int32))
+
 atom_spec = [
     ('protons', types.ListType(Proton)),
     ('neutrons', types.ListType(Neutron)),
     ('electrons', types.ListType(Electron)),
-    ('orbitals', types.DictType(orbital_key_type, types.int32)),
+    ('orbitals', types.DictType(orbital_key_type, int32)),
     ('_orbitals', types.ListType(Orbital))
 ]
 
 @jitclass(atom_spec)
 class Atom:
-    def __init__(self, protons, neutrons):
-        self.protons = typed.List([Proton() for _ in range(protons)])
-        self.neutrons = typed.List([Neutron() for _ in range(neutrons)])
+    def __init__(self, n_protons, n_neutrons):
+        self.protons = typed.List([Proton() for _ in range(n_protons)])
+        self.neutrons = typed.List([Neutron() for _ in range(n_neutrons)])
         self.electrons = typed.List.empty_list(Electron)
         self.orbitals = typed.Dict.empty(orbital_key_type, int32)
         self._orbitals = typed.List.empty_list(Orbital)
