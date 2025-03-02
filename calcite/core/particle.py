@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from calcite.core.quark import up_quark, down_quark, quark_type
 from numba import njit, float64, int32, types, typed, typeof
 from numba.experimental import jitclass
-import calcite.formulas as formulas
+from calcite import  constants
 
 quark_type = typeof(up_quark())
 
@@ -12,21 +12,24 @@ particle_spec = [
     ('charge', float64),
     ('spin', float64),
     ('position', types.optional(float64[:])),
-    ('velocity', float64[:]),
+    ('velocity', types.optional(float64[:])),
     ('energy', float64),
-    ('color', types.string)
+    ('data', types.DictType(types.unicode_type, float64)),
 ]
 
 @jitclass(particle_spec)
 class Particle:
-    def __init__(self, mass: float, charge: float, spin: float, position: list[float] = None, velocity: list[float] = None, energy: float = 0, color='white'):
+    def __init__(self, mass: float, charge: float, spin: float, position: list[float] | None, 
+                 velocity: list[float] | None, energy: float, data: dict[str, object]):
+        nan_array = np.full(3, np.nan, dtype=np.float64)
+
         self.mass = mass
         self.charge = charge
         self.spin = spin
-        self.position = position
-        self.velocity = velocity
+        self.position = np.array(position, dtype=np.float64) if position is not None else nan_array
+        self.velocity = np.array(velocity, dtype=np.float64) if velocity is not None else nan_array
         self.energy = energy if energy > 0 else self.mass
-        self.color = color
+        self.data = data
 
     @property
     def momentum(self):
@@ -34,18 +37,22 @@ class Particle:
     
     @property
     def kinetic_energy(self):
-        return 0.5 * self.mass * formulas.magnitude(self.velocity) ** 2
+        return 0.5 * self.mass * np.linalg.norm(self.velocity) ** 2
 
 composite_particle_spec = [
-    ('momentum', float64[:]),
-    ('quarks', types.ListType(quark_type))
+    ('position', types.optional(float64[:])),
+    ('velocity', types.optional(float64[:])),
+    ('quarks', types.ListType(quark_type)),
+    ('data', types.DictType(types.unicode_type, float64)),
 ]
 
 @jitclass(composite_particle_spec)
 class CompositeParticle:
-    def __init__(self, momentum, quarks):
-        self.momentum = momentum
+    def __init__(self, position, velocity, quarks, data):
+        self.position = position
+        self.velocity = velocity
         self.quarks = quarks
+        self.data = data
 
     @property
     def mass(self):
@@ -66,45 +73,51 @@ class CompositeParticle:
     @property
     def baryon(self):
         return len(self.quarks) // 3
+    
+    @property
+    def momentum(self):
+        return self.mass * self.velocity
 
-electron_spec = particle_spec + [
-    ('n', int32),
-    ('l', int32),
-    ('m', int32)
-]
+@njit
+def electron(n: int, l: int, m: int, position: list[float] | None = None, 
+             velocity: list[float] = None, energy: float = -1) -> Particle:
+    data = typed.Dict.empty(types.unicode_type, float64)
+    data['type'] = constants.ELECTRON_FLAG
+    data['n'] = n
+    data['l'] = l
+    data['m'] = m
 
-@jitclass(electron_spec)
-class Electron:
-    def __init__(self, momentum=np.zeros(3), energy=0, n=1, l=0, m=0):
-        self.mass = 1.0
-        self.charge = -1.0
-        self.spin = 0.5
-        self.momentum = momentum
-        self.energy = energy if energy > 0 else self.mass
-        self.color = 'white'
+    return Particle(
+        constants.ELECTRON_MASS, 
+        constants.ELECTRON_CHARGE, 
+        constants.ELECTRON_SPIN, 
+        position, 
+        velocity, 
+        energy, 
+        data
+    )
 
-        self.n = n
-        self.l = l
-        self.m = m
+@njit
+def proton(position: list[float] | None = None, velocity: list[float] | None = None) -> CompositeParticle:
+    data = typed.Dict.empty(types.string, float64)
+    data['type'] = constants.PROTON_FLAG
+    return CompositeParticle(
+        position,
+        velocity,
+        typed.List([up_quark(), up_quark(), down_quark()]),
+        data
+    )
 
-proton_spec = composite_particle_spec
+@njit
+def neutron(position: list[float] | None = None, velocity: list[float] | None = None) -> CompositeParticle:
+    data = typed.Dict.empty(types.string, float64)
+    data['type'] = constants.NEUTRON_FLAG
+    return CompositeParticle(
+        position,
+        velocity,
+        typed.List([up_quark(), down_quark(), down_quark()]),
+        data
+    )
 
-@jitclass(proton_spec)
-class Proton:
-    def __init__(self, momentum=np.zeros(3)):
-        self.momentum = momentum
-        self.quarks = typed.List.empty_list(quark_type)
-        self.quarks.append(up_quark())
-        self.quarks.append(up_quark())
-        self.quarks.append(down_quark())
-
-neutron_spec = composite_particle_spec
-
-@jitclass(neutron_spec)
-class Neutron:
-    def __init__(self, momentum=np.zeros(3)):
-        self.momentum = momentum
-        self.quarks = typed.List.empty_list(quark_type)
-        self.quarks.append(up_quark())
-        self.quarks.append(down_quark())
-        self.quarks.append(down_quark())
+particle_type = typeof(electron(1, 0, 1))
+composite_particle_type = typeof(proton())
