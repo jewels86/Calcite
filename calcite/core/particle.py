@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass, field
 from calcite.core.quark import up_quark, down_quark, quark_type
-from numba import njit, float64, int32, types, typed, typeof
+from numba import njit, float64, int64, types, typed, typeof
 from numba.experimental import jitclass
 from calcite import  constants
 
@@ -11,8 +11,8 @@ particle_spec = [
     ('mass', float64),
     ('charge', float64),
     ('spin', float64),
-    ('position', types.optional(float64[:])),
-    ('velocity', types.optional(float64[:])),
+    ('position', float64[:]),
+    ('velocity', float64[:]),
     ('energy', float64),
     ('data', types.DictType(types.unicode_type, float64)),
 ]
@@ -40,8 +40,8 @@ class Particle:
         return 0.5 * self.mass * np.linalg.norm(self.velocity) ** 2
 
 composite_particle_spec = [
-    ('position', types.optional(float64[:])),
-    ('velocity', types.optional(float64[:])),
+    ('position', float64[:]),
+    ('velocity', float64[:]),
     ('quarks', types.ListType(quark_type)),
     ('data', types.DictType(types.unicode_type, float64)),
 ]
@@ -49,8 +49,10 @@ composite_particle_spec = [
 @jitclass(composite_particle_spec)
 class CompositeParticle:
     def __init__(self, position, velocity, quarks, data):
-        self.position = position
-        self.velocity = velocity
+        nan_array = np.full(3, np.nan, dtype=np.float64)
+
+        self.position = position if position is not None else nan_array
+        self.velocity = velocity if velocity is not None else nan_array
         self.quarks = quarks
         self.data = data
 

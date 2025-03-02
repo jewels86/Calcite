@@ -1,4 +1,4 @@
-from numba import float64, int32, types, njit, typeof
+from numba import float64, int64, types, njit, typeof
 from numba.experimental import jitclass
 
 spec = [

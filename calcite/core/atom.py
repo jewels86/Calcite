@@ -3,15 +3,15 @@ from dataclasses import dataclass, field
 from calcite.core.particle import Particle, CompositeParticle, electron, proton, neutron, \
     particle_type, composite_particle_type
 import calcite.constants as constants
-from numba import njit, float64, int32, types, typed, typeof
+from numba import njit, float64, int64, types, typed, typeof
 from numba.experimental import jitclass
 from numba.types import Tuple
 
 
 orbital_spec = [
-    ('n', int32),
-    ('l', int32),
-    ('m', int32),
+    ('n', int64),
+    ('l', int64),
+    ('m', int64),
     ('electrons', types.ListType(particle_type))
 ]
 
@@ -31,14 +31,14 @@ class Orbital:
             return True
         return False
 
-orbital_type = typeof(Orbital(1, 0, 0, []))
-orbital_key_type = Tuple((int32, int32, int32))
+orbital_type = typeof(Orbital(1, 0, 0, typed.List.empty_list(particle_type)))
+orbital_key_type = Tuple((int64, int64, int64))
 
 atom_spec = [
     ('protons', types.ListType(composite_particle_type)),
     ('neutrons', types.ListType(composite_particle_type)),
     ('electrons', types.ListType(particle_type)),
-    ('orbitals', types.DictType(orbital_key_type, int32)),
+    ('orbitals', types.DictType(orbital_key_type, int64)),
     ('_orbitals', types.ListType(orbital_type))
 ]
 
@@ -47,10 +47,10 @@ class Atom:
     def __init__(self, n_protons, n_neutrons, n_electrons):
         self.protons = typed.List([proton() for _ in range(n_protons)])
         self.neutrons = typed.List([neutron() for _ in range(n_neutrons)])
-        self.electrons = typed.List.empty_list(Particle)
-        self.orbitals = typed.Dict.empty(orbital_key_type, int32)
-        self._orbitals = typed.List.empty_list(Orbital)
-        #self.configure(n_electrons)
+        self.electrons = typed.List.empty_list(particle_type)
+        self.orbitals = typed.Dict.empty(orbital_key_type, int64)
+        self._orbitals = typed.List.empty_list(orbital_type)
+        self.configure(n_electrons)
 
     def configure(self, n_electrons: int):
         order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
@@ -60,7 +60,7 @@ class Atom:
             for m in range(-l, l + 1):
                 if (n, l, m) not in self.orbitals:
                     self.orbitals[(n, l, m)] = len(self._orbitals)
-                    self._orbitals.append(Orbital(n, l, m, []))
+                    self._orbitals.append(Orbital(n, l, m, typed.List.empty_list(particle_type)))
                 orbital = self._orbitals[self.orbitals[(n, l, m)]]
                 for spin in states:
                     if added < n_electrons and orbital.add(spin):
@@ -70,7 +70,7 @@ class Atom:
                 return
             
     def add_electron(self, _electron: Particle):
-        for orbital in self.orbitals.values():
+        for orbital in self._orbitals:
             if orbital.add(_electron.spin):
                 self.electrons.append(_electron)
                 return True
@@ -85,9 +85,9 @@ class Atom:
         return None
     
     def covalent_bond(self, atom: "Atom"):
-        for orbital in self.orbitals.values():
+        for orbital in self._orbitals:
             if len(orbital.electrons) == 1:
-                for other in atom.orbitals.values():
+                for other in atom._orbitals:
                     if len(other.electrons) == 1:
                         orbital.electrons.append(other.electrons[0])
                         other.electrons.append(orbital.electrons[0])
@@ -115,7 +115,7 @@ class Atom:
     @property
     def charge(self):
         return sum([proton.charge for proton in self.protons]) \
-            - self.electrons
+            - sum([_electron.charge for _electron in self.electrons])
     
     @property
     def spin(self):
