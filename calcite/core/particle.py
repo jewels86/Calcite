@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from calcite.core.quark import up_quark, down_quark, quark_type
 from numba import njit, float64, int32, types, typed, typeof
 from numba.experimental import jitclass
+import calcite.formulas as formulas
 
 quark_type = typeof(up_quark())
 
@@ -10,20 +11,30 @@ particle_spec = [
     ('mass', float64),
     ('charge', float64),
     ('spin', float64),
-    ('momentum', float64[:]),
+    ('position', types.optional(float64[:])),
+    ('velocity', float64[:]),
     ('energy', float64),
     ('color', types.string)
 ]
 
 @jitclass(particle_spec)
 class Particle:
-    def __init__(self, mass: float, charge: float, spin: float, momentum: np.ndarray = None, energy: float = 0, color='white'):
+    def __init__(self, mass: float, charge: float, spin: float, position: list[float] = None, velocity: list[float] = None, energy: float = 0, color='white'):
         self.mass = mass
         self.charge = charge
         self.spin = spin
-        self.momentum = momentum if momentum is not None else np.zeros(3)
+        self.position = position
+        self.velocity = velocity
         self.energy = energy if energy > 0 else self.mass
         self.color = color
+
+    @property
+    def momentum(self):
+        return self.mass * self.velocity
+    
+    @property
+    def kinetic_energy(self):
+        return 0.5 * self.mass * formulas.magnitude(self.velocity) ** 2
 
 composite_particle_spec = [
     ('momentum', float64[:]),
@@ -38,7 +49,7 @@ class CompositeParticle:
 
     @property
     def mass(self):
-        return sum([quark.mass for quark in self.quarks])
+        return sum([quark.mass for quark in self.quarks]) + 0.0103
     
     @property
     def charge(self):

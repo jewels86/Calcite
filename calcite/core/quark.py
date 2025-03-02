@@ -20,15 +20,15 @@ class Quark:
 
 @njit
 def up_quark(color='red'):
-    return Quark('up', 2/3, 0.002, 0.5, color)
+    return Quark('up', 2/3, 0.0022, 0.5, color)
 
 @njit
 def down_quark(color='green'):
-    return Quark('down', -1/3, 0.005, 0.5, color)
+    return Quark('down', -1/3, 0.0047, 0.5, color)
 
 @njit
 def strange_quark(color='blue'):
-    return Quark('strange', -1/3, 0.095, 0.5, color)
+    return Quark('strange', -1/3, 0.093, 0.5, color)
 
 @njit
 def charm_quark(color='cyan'):
@@ -36,7 +36,7 @@ def charm_quark(color='cyan'):
 
 @njit
 def top_quark(color='magenta'):
-    return Quark('top', 2/3, 173.21, 0.5, color)
+    return Quark('top', 2/3, 173.1, 0.5, color)
 
 @njit
 def bottom_quark(color='yellow'):

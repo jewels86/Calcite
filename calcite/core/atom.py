@@ -40,12 +40,14 @@ atom_spec = [
 
 @jitclass(atom_spec)
 class Atom:
-    def __init__(self, n_protons, n_neutrons):
+    def __init__(self, n_protons, n_neutrons, n_electrons=-1):
         self.protons = typed.List([Proton() for _ in range(n_protons)])
         self.neutrons = typed.List([Neutron() for _ in range(n_neutrons)])
         self.electrons = typed.List.empty_list(Electron)
         self.orbitals = typed.Dict.empty(orbital_key_type, int32)
         self._orbitals = typed.List.empty_list(Orbital)
+        #if n_electrons != -1:
+        #    self.configure(n_electrons)
 
     def configure(self, n_electrons: int):
         order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
@@ -101,7 +103,7 @@ class Atom:
     def mass(self):
         return sum([proton.mass for proton in self.protons]) \
             + sum([neutron.mass for neutron in self.neutrons]) \
-            + self.electrons * constants.ELECTRON_MASS
+            + sum([electron.mass for electron in self.electrons])
     
     @property
     def atomic_number(self):
@@ -116,4 +118,4 @@ class Atom:
     def spin(self):
         return sum([proton.spin for proton in self.protons]) \
             + sum([neutron.spin for neutron in self.neutrons]) \
-            + self.electrons * 0.5
+            + sum([electron.spin for electron in self.electrons])
