@@ -12,11 +12,11 @@ spec = [
 @jitclass(spec)
 class Quark:
     def __init__(self, type, charge, mass, spin, color='white'):
-        self.type = type
-        self.charge = charge
-        self.mass = mass
-        self.spin = spin
-        self.color = color
+        self.type: str = type
+        self.charge: float = charge
+        self.mass: float = mass
+        self.spin: float = spin
+        self.color: float = color
 
 @njit
 def up_quark(color='red'):

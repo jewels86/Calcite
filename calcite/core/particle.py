@@ -23,7 +23,7 @@ class Particle:
                  velocity: list[float] | None, energy: float, data: dict[str, object]):
         nan_array = np.full(3, np.nan, dtype=np.float64)
 
-        self.mass = mass
+        self.mass: float = mass
         self.charge = charge
         self.spin = spin
         self.position = np.array(position, dtype=np.float64) if position is not None else nan_array

@@ -1,5 +1,6 @@
 from calcite.core.quark import up_quark, down_quark
 import numba as nb
+import numpy as np
 
 ELECTRON_FLAG = 0
 PROTON_FLAG = 1
@@ -22,3 +23,5 @@ NEUTRON_QUARKS = [up_quark(), down_quark(), down_quark()]
 
 LIST = nb.typed.List
 LIST_TYPE = nb.types.ListType
+
+NAN_VECTOR = np.array([np.nan, np.nan, np.nan], dtype=np.float64)

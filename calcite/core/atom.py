@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from calcite.core.particle import Particle, CompositeParticle, electron, proton, neutron, \
     particle_type, composite_particle_type
 import calcite.constants as constants
-from numba import njit, float64, int64, types, typed, typeof
+from numba import njit, float64, int64, types, typed, typeof, deferred_type
 from numba.experimental import jitclass
 from numba.types import Tuple
 
@@ -34,17 +34,24 @@ class Orbital:
 orbital_type = typeof(Orbital(1, 0, 0, typed.List.empty_list(particle_type)))
 orbital_key_type = Tuple((int64, int64, int64))
 
+_atom_type = deferred_type()
 atom_spec = [
+    ('position', float64[:]),
+    ('velocity', float64[:]),
     ('protons', types.ListType(composite_particle_type)),
     ('neutrons', types.ListType(composite_particle_type)),
     ('electrons', types.ListType(particle_type)),
     ('orbitals', types.DictType(orbital_key_type, int64)),
-    ('_orbitals', types.ListType(orbital_type))
+    ('_orbitals', types.ListType(orbital_type)),
+    ('ionic_bonds', types.ListType(types.Tuple([_atom_type, particle_type]))),
+    ('covalent_bonds', types.ListType(types.Tuple([_atom_type, particle_type]))),
 ]
 
 @jitclass(atom_spec)
 class Atom:
-    def __init__(self, n_protons, n_neutrons, n_electrons):
+    def __init__(self, position, velocity, n_protons, n_neutrons, n_electrons):
+        self.position = position
+        self.velocity = velocity
         self.protons = typed.List([proton() for _ in range(n_protons)])
         self.neutrons = typed.List([neutron() for _ in range(n_neutrons)])
         self.electrons = typed.List.empty_list(particle_type)
@@ -91,6 +98,8 @@ class Atom:
                     if len(other.electrons) == 1:
                         orbital.electrons.append(other.electrons[0])
                         other.electrons.append(orbital.electrons[0])
+                        self.covalent_bonds.append((atom, orbital.electrons[0]))
+                        atom.covalent_bonds.append((self, other.electrons[0]))
                         return True
         return False
 
@@ -99,6 +108,8 @@ class Atom:
             _electron = self.remove_electron()
             if _electron:
                 atom.add_electron(_electron)
+                self.ionic_bonds.append((atom, _electron))
+                atom.ionic_bonds.append((self, _electron))
                 return True
         return False
 
@@ -122,3 +133,19 @@ class Atom:
         return sum([proton.spin for proton in self.protons]) \
             + sum([neutron.spin for neutron in self.neutrons]) \
             + sum([_electron.spin for _electron in self.electrons])
+    
+    @property
+    def momentum(self):
+        return np.linalg.norm(self.mass * self.velocity)
+
+@njit
+def atom(n_protons: int, n_neutrons: int, n_electrons: int, position: list[float] | None = None, 
+         velocity: list[float] | None = None) -> Atom:
+    if position is None:
+        position = constants.NAN_VECTOR
+    if velocity is None:
+        velocity = constants.NAN_VECTOR
+    return Atom(position, velocity, n_protons, n_neutrons, n_electrons)
+
+atom_type = typeof(atom(0, 0, 0))
+_atom_type.define(atom_type)
