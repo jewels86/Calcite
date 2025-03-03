@@ -33,6 +33,7 @@ class Orbital:
 
 orbital_type = typeof(Orbital(1, 0, 0, typed.List.empty_list(particle_type)))
 orbital_key_type = Tuple((int64, int64, int64))
+awi_electron = types.Tuple([int64, particle_type])
 
 atom_spec = [
     ('position', float64[:]), # position vector (x, y, z)
@@ -57,9 +58,12 @@ class Atom:
         self.electrons = typed.List.empty_list(particle_type)
         self.orbitals = typed.Dict.empty(orbital_key_type, int64)
         self._orbitals = typed.List.empty_list(orbital_type)
+        self.ionic_bonds = typed.List.empty_list(awi_electron)
+        self.covalent_bonds = typed.List.empty_list(awi_electron)
         self.configure(n_electrons)
 
     def configure(self, n_electrons: int):
+        self.electrons = typed.List.empty_list(particle_type)
         order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
         added = 0
         states = [0.5, -0.5]
@@ -79,7 +83,7 @@ class Atom:
     def add_electron(self, _electron: Particle):
         for orbital in self._orbitals:
             if orbital.add(_electron.spin):
-                self.electrons.append(_electron)
+                self.configure(len(self.electrons) + 1)
                 return True
         return False
     
@@ -88,6 +92,7 @@ class Atom:
             _electron = self.electrons.pop()
             orbital = self.orbitals[(_electron["n"], _electron["l"], _electron["m"])]
             orbital.electrons.remove(_electron)
+            self.configure(len(self.electrons))
             return _electron
         return None
     

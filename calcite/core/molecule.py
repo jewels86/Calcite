@@ -16,6 +16,7 @@ class Molecule:
         bonds = []
         for atom in self.atoms:
             for bond in atom.ionic_bonds:
+                print(2)
                 bonds.append(bond)
         return bonds
     
