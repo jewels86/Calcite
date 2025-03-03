@@ -34,17 +34,17 @@ class Orbital:
 orbital_type = typeof(Orbital(1, 0, 0, typed.List.empty_list(particle_type)))
 orbital_key_type = Tuple((int64, int64, int64))
 
-_atom_type = deferred_type()
 atom_spec = [
-    ('position', float64[:]),
-    ('velocity', float64[:]),
-    ('protons', types.ListType(composite_particle_type)),
-    ('neutrons', types.ListType(composite_particle_type)),
-    ('electrons', types.ListType(particle_type)),
-    ('orbitals', types.DictType(orbital_key_type, int64)),
-    ('_orbitals', types.ListType(orbital_type)),
-    ('ionic_bonds', types.ListType(types.Tuple([_atom_type, particle_type]))),
-    ('covalent_bonds', types.ListType(types.Tuple([_atom_type, particle_type]))),
+    ('position', float64[:]), # position vector (x, y, z)
+    ('velocity', float64[:]), # velocity vector (vx, vy, vz)
+    ('protons', types.ListType(composite_particle_type)), # list of protons
+    ('neutrons', types.ListType(composite_particle_type)), # list of neutrons
+    ('electrons', types.ListType(particle_type)), # list of electrons
+    ('orbitals', types.DictType(orbital_key_type, int64)), # dictionary of orbital parameters -> index
+    ('_orbitals', types.ListType(orbital_type)), # list of orbitals
+    ('ionic_bonds', types.ListType(types.Tuple([int64, particle_type]))), # list of ionic bonds (atom world index -> electron)
+    ('covalent_bonds', types.ListType(types.Tuple([int64, particle_type]))), # list of covalent bonds (atom world index -> electron)
+    ('index', int64) # atom world index
 ]
 
 @jitclass(atom_spec)
@@ -98,8 +98,8 @@ class Atom:
                     if len(other.electrons) == 1:
                         orbital.electrons.append(other.electrons[0])
                         other.electrons.append(orbital.electrons[0])
-                        self.covalent_bonds.append((atom, orbital.electrons[0]))
-                        atom.covalent_bonds.append((self, other.electrons[0]))
+                        self.covalent_bonds.append((atom.index, orbital.electrons[0]))
+                        atom.covalent_bonds.append((self.index, other.electrons[0]))
                         return True
         return False
 
@@ -108,8 +108,8 @@ class Atom:
             _electron = self.remove_electron()
             if _electron:
                 atom.add_electron(_electron)
-                self.ionic_bonds.append((atom, _electron))
-                atom.ionic_bonds.append((self, _electron))
+                self.ionic_bonds.append((atom.index, _electron))
+                atom.ionic_bonds.append((self.index, _electron))
                 return True
         return False
 
@@ -148,4 +148,3 @@ def atom(n_protons: int, n_neutrons: int, n_electrons: int, position: list[float
     return Atom(position, velocity, n_protons, n_neutrons, n_electrons)
 
 atom_type = typeof(atom(0, 0, 0))
-_atom_type.define(atom_type)

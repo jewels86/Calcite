@@ -6,7 +6,8 @@ spec = [
     ('charge', float64),
     ('mass', float64),
     ('spin', float64),
-    ('color', types.string)
+    ('color', types.string),
+    ('index', int64)
 ]
 
 @jitclass(spec)

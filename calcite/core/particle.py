@@ -15,6 +15,7 @@ particle_spec = [
     ('velocity', float64[:]),
     ('energy', float64),
     ('data', types.DictType(types.unicode_type, float64)),
+    ('index', int64)
 ]
 
 @jitclass(particle_spec)
@@ -44,6 +45,7 @@ composite_particle_spec = [
     ('velocity', float64[:]),
     ('quarks', types.ListType(quark_type)),
     ('data', types.DictType(types.unicode_type, float64)),
+    ('index', int64)
 ]
 
 @jitclass(composite_particle_spec)
