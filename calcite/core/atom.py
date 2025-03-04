@@ -2,7 +2,7 @@ import numpy as np
 from dataclasses import dataclass, field
 from calcite.core.particle import Particle, CompositeParticle, electron, proton, neutron, \
     particle_type, composite_particle_type
-import calcite.constants as constants
+from calcite import constants
 from numba import njit, float64, int64, types, typed, typeof, deferred_type
 from numba.experimental import jitclass
 from numba.types import Tuple
@@ -18,18 +18,21 @@ orbital_spec = [
 @jitclass(orbital_spec)
 class Orbital:
     def __init__(self, n, l, m, electrons):
-        self.n = n
-        self.l = l
-        self.m = m
+        self.n = n # principal quantum number
+        self.l = l # azimuthal quantum number
+        self.m = m # magnetic quantum number
         self.electrons = electrons
 
-    def add(self, spin: float):
-        if len(self.electrons) < 2 and spin not in [_electron.spin for _electron in self.electrons]:
-            _electron = electron(self.n, self.l, self.m)
-            _electron.spin = spin
-            self.electrons.append(_electron)
+    def can_add(self, electron: Particle):
+        return len(self.electrons) < 2 and electron.spin not in [e.spin for e in self.electrons]
+        # orbitals can only hold two electrons - one with spin up and one with spin down
+
+    def add(self, electron: Particle):
+        if self.can_add(electron): 
+            self.electrons.append(electron) 
             return True
         return False
+        
 
 orbital_type = typeof(Orbital(1, 0, 0, typed.List.empty_list(particle_type)))
 orbital_key_type = Tuple((int64, int64, int64))
@@ -55,68 +58,55 @@ class Atom:
         self.velocity = velocity
         self.protons = typed.List([proton() for _ in range(n_protons)])
         self.neutrons = typed.List([neutron() for _ in range(n_neutrons)])
-        self.electrons = typed.List.empty_list(particle_type)
+        self.electrons = typed.List.empty_list(particle_type) 
         self.orbitals = typed.Dict.empty(orbital_key_type, int64)
         self._orbitals = typed.List.empty_list(orbital_type)
         self.ionic_bonds = typed.List.empty_list(awi_electron)
         self.covalent_bonds = typed.List.empty_list(awi_electron)
-        self.configure(n_electrons)
-
-    def configure(self, n_electrons: int):
-        self.electrons = typed.List.empty_list(particle_type)
-        order = [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2), (4, 0)]
+        
+    def configure(self, order: list = constants.ORBITAL_ORDER) -> None:
         added = 0
-        states = [0.5, -0.5]
+
+        for orbital in self._orbitals:
+            orbital.electrons = typed.List.empty_list(particle_type)
+
         for n, l in order:
-            for m in range(-l, l + 1):
+            orbitals = []
+            for m in range(-l, l+1):
                 if (n, l, m) not in self.orbitals:
                     self.orbitals[(n, l, m)] = len(self._orbitals)
                     self._orbitals.append(Orbital(n, l, m, typed.List.empty_list(particle_type)))
                 orbital = self._orbitals[self.orbitals[(n, l, m)]]
-                for spin in states:
-                    if added < n_electrons and orbital.add(spin):
-                        self.electrons.append(orbital.electrons[-1])
-                        added += 1
-            if added >= n_electrons:
-                return
-            
-    def add_electron(self, _electron: Particle):
-        for orbital in self._orbitals:
-            if orbital.add(_electron.spin):
-                self.configure(len(self.electrons) + 1)
-                return True
-        return False
-    
-    def remove_electron(self):
-        if self.electrons:
-            _electron = self.electrons.pop()
-            orbital = self.orbitals[(_electron["n"], _electron["l"], _electron["m"])]
-            orbital.electrons.remove(_electron)
-            self.configure(len(self.electrons))
-            return _electron
-        return None
-    
-    def covalent_bond(self, atom: "Atom"):
-        for orbital in self._orbitals:
-            if len(orbital.electrons) == 1:
-                for other in atom._orbitals:
-                    if len(other.electrons) == 1:
-                        orbital.electrons.append(other.electrons[0])
-                        other.electrons.append(orbital.electrons[0])
-                        self.covalent_bonds.append((atom.index, orbital.electrons[0]))
-                        atom.covalent_bonds.append((self.index, other.electrons[0]))
-                        return True
-        return False
+                for _ in range(2):
+                    if added < len(self.electrons):
+                        electron = self.electrons[added]
+                        if orbital.add(electron):
+                            added += 1
+                    else:
+                        break
 
-    def ionic_bond(self, atom: "Atom"):
-        if self.charge() <= 0 and atom.charge() >= 0:
-            _electron = self.remove_electron()
-            if _electron:
-                atom.add_electron(_electron)
-                self.ionic_bonds.append((atom.index, _electron))
-                atom.ionic_bonds.append((self.index, _electron))
+        for orbital in self._orbitals:
+            if len(orbital.electrons) == 0:
+                self.orbitals.pop((orbital.n, orbital.l, orbital.m))
+                self._orbitals.remove(orbital)
+    
+    def add_electron(self, electron: Particle) -> bool:
+        for orbital in self._orbtials:
+            if orbital.can_add(electron):
+                self.electrons.append(electron)
+                self.configure()
                 return True
         return False
+    
+    def remove_electron(self) -> bool:
+        if len(self.electrons) > 0:
+            self.electrons.pop()
+            self.configure()
+            return True
+        return False
+    
+    def covalent_bond(self, other: "Atom") -> bool:
+        
 
     @property
     def mass(self):
