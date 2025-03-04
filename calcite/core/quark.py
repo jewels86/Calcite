@@ -1,57 +1,66 @@
-from numba import float64, int64, types, njit, typeof, typed
-from numba.experimental import jitclass
-from calcite.constants import COLORS
+from numba.experimental import structref
+from numba import njit, types, typed, float64
+from numba.extending import overload
 
-spec = [
-    ('type', types.string),
-    ('charge', float64),
-    ('mass', float64),
-    ('spin', float64),
-    ('color', types.string),
-    ('index', int64),
-    ('data', types.DictType(types.string, types.float64)),
-    ('debug_mode', types.boolean)
-]
+# region QuarkType and Quark
+# region Class definitions
+@structref.register
+class QuarkType(types.StructRef):
+    def preprocess_fields(self, fields):
+        return tuple((name, types.unliteral(typ)) for name, typ in fields)
 
-@jitclass(spec)
-class Quark:
-    """
-    A basic class to represent a quark in the Standard Model of particle physics.
+class Quark(structref.StructRefProxy):
+    def __new__(cls, flavor: str, charge: float, mass: float, spin: float, data: dict):
+        return structref.StructRefProxy.__new__(cls, flavor, charge, mass, spin, data)
+    
+    @property
+    def flavor(self) -> str:
+        return Quark_get_flavor(self)
+    
+    @property
+    def charge(self) -> float:
+        return Quark_get_charge(self)
+    
+    @property
+    def mass(self) -> float:
+        return Quark_get_mass(self)
+    
+    @property
+    def spin(self) -> float:
+        return Quark_get_spin(self)
 
-    Attributes:
-    - type (str): the type of quark (up, down, strange, charm, top, bottom)
-    - charge (float): the electric charge of the quark
-    - mass (float): the mass of the quark in MeV/c^2
-    - spin (float): the spin of the quark
-    - data (dict): additional data about the quark
-    - debug_mode (bool): a flag to enable debug mode
-    """
-    def __init__(self, type: str, charge: float, mass: float, spin: float, data: dict):
-        """
-        Initialize a Quark object with the given type, charge, mass, spin, and data.
-        
-        Args:
-        - type (str): the type of quark (up, down, strange, charm, top, bottom)
-        - charge (float): the electric charge of the quark
-        - mass (float): the mass of the quark in MeV/c^2
-        - spin (float): the spin of the quark
-        - data (dict): additional data about the quark
+    @property
+    def data(self) -> dict:
+        return Quark_get_data(self)
 
-        Returns:
-            Quark: a Quark object with the specified attributes
-        """
-        self.type: str = type
-        "The type of quark (up, down, strange, charm, top, bottom)."
-        self.charge: float = charge
-        "The electric charge of the quark."
-        self.mass: float = mass
-        "The mass of the quark in atomic units."
-        self.spin: float = spin
-        "The spin of the quark."
-        self.data = data
-        "Additional data about the quark."
-        self.debug_mode: bool = False
+# endregion
+# region Quark methods
 
+@njit
+def Quark_get_flavor(self):
+    return self.flavor
+
+@njit
+def Quark_get_charge(self):
+    return self.charge
+
+@njit
+def Quark_get_mass(self):
+    return self.mass
+
+@njit
+def Quark_get_spin(self):
+    return self.spin
+
+@njit
+def Quark_get_data(self):
+    return self.data
+
+structref.define_proxy(Quark, QuarkType, ['flavor', 'charge', 'mass', 'spin', 'data'])
+# endregion
+# endregion
+
+#region Quark creation methods
 @njit
 def up_quark() -> Quark:
     """
@@ -118,4 +127,4 @@ def bottom_quark() -> Quark:
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('bottom', -1/3, 4.18, 0.5, data)
 
-quark_type = typeof(up_quark())
+#endregion
