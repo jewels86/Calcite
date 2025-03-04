@@ -1,6 +1,6 @@
 from numba import int64, types, typed, typeof
 from numba.experimental import jitclass
-from calcite import particle_type, Particle
+from calcite.core.particle import particle_type, Particle
 
 orbital_spec = [
     ('n', int64),
