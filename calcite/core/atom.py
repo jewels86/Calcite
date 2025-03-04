@@ -1,47 +1,12 @@
 import numpy as np
-from dataclasses import dataclass, field
-from calcite.core.particle import Particle, CompositeParticle, electron, proton, neutron, \
-    particle_type, composite_particle_type
+from calcite.core import Particle, electron, proton, neutron, \
+    particle_type, composite_particle_type, orbital_type, Orbital
 from calcite.constants import NAN_VECTOR
 from calcite.core.exceptions import UnassignedElectronsError
-from numba import njit, float64, int64, types, typed, typeof, deferred_type
+from numba import njit, float64, int64, types, typed, typeof
 from numba.experimental import jitclass
 from numba.types import Tuple
 
-
-orbital_spec = [
-    ('n', int64),
-    ('l', int64),
-    ('m', int64),
-    ('electrons', types.ListType(particle_type)),
-    ('debug_mode', types.boolean)
-]
-
-@jitclass(orbital_spec)
-class Orbital:
-    def __init__(self, n, l, m, electrons):
-        self.n = n # principal quantum number
-        self.l = l # azimuthal quantum number
-        self.m = m # magnetic quantum number
-        self.electrons = electrons
-
-    def can_add(self, electron: Particle):
-        if self.debug_mode: print(f"Orbital.can_add: Checking if electron with spin ({'up' if electron.spin == 0.5 else 'down'}) can be added to orbital {self.n}, {self.l}, {self.m}")
-        if self.debug_mode: print(f"Orbital.can_add: Current electrons in orbital: {len(self.electrons)} ({('up' if self.electrons[0].spin == 0.5 else 'down') if len(self.electrons) > 0 else 'None'\
-                                                                                                           }, {('up' if self.electrons[1].spin == 0.5 else 'down') if len(self.electrons) > 1 else 'None'})")
-        can_add = len(self.electrons) < 2 and (len(self.electrons) == 0 or electron.spin != self.electrons[0].spin)
-        if self.debug_mode: print(f"Orbital.can_add: Can add: {can_add}")
-        return can_add
-        # orbitals can only hold two electrons - one with spin up and one with spin down
-
-    def add(self, electron: Particle):
-        if self.can_add(electron): 
-            self.electrons.append(electron) 
-            return True
-        return False
-        
-
-orbital_type = typeof(Orbital(1, 0, 0, typed.List.empty_list(particle_type)))
 orbital_key_type = Tuple((int64, int64, int64))
 awi_electron = types.Tuple([int64, particle_type])
 awi_electron_electron = types.Tuple([int64, particle_type, particle_type])
@@ -62,7 +27,35 @@ atom_spec = [
 
 @jitclass(atom_spec)
 class Atom:
+    """
+    A class representing an atom.
+
+    Attributes:
+    - position (np.ndarray): the position of the atom in 3D space
+    - velocity (np.ndarray): the velocity of the atom in 3D space
+    - protons (list): a list of protons in the atom
+    - neutrons (list): a list of neutrons in the atom
+    - electrons (list): a list of electrons in the atom
+    - orbitals (dict): a dictionary of orbital parameters to index
+    - _orbitals (list): a list of orbitals
+    - ionic_bonds (list): a list of ionic bonds
+    - covalent_bonds (list): a list of covalent bonds
+    - unassigned (list): a list of unassigned electrons
+    - index (int): the atom world index
+    - debug_mode (bool): flag for debug mode
+    """
     def __init__(self, position, velocity, n_protons, n_neutrons, n_electrons, debug):
+        """
+        Initializes an Atom object with the given position, velocity, number of protons, neutrons, electrons, and debug mode.
+
+        Args:
+        - position (list[float]): the position of the atom in 3D space
+        - velocity (list[float]): the velocity of the atom in 3D space
+        - n_protons (int): the number of protons in the atom
+        - n_neutrons (int): the number of neutrons in the atom
+        - n_electrons (int): the number of electrons in the atom
+        - debug (bool): flag for debug mode
+        """
         self.position = position
         self.velocity = velocity
         self.protons = typed.List([proton() for _ in range(n_protons)])
@@ -79,6 +72,12 @@ class Atom:
         self.configure()
 
     def setup_electrons(self, n_electrons):
+        """
+        Sets up the electrons in the atom.
+
+        Args:
+        - n_electrons (int): the number of electrons to be set up
+        """
         added = 0
         orbitals_order = [(n, l) for n in range(1, 7) for l in range(n)]
         
@@ -92,6 +91,12 @@ class Atom:
                     added += 1
         
     def configure(self, order: list = None) -> None:
+        """
+        Configures the orbitals and assigns electrons to them.
+
+        Args:
+        - order (list, optional): the order of orbitals. Defaults to None.
+        """
         added = 0
         if order is None: order = [(n, l) for n in range(1, 7) for l in range(n)]
         capacity = sum([2 * (2 * l + 1) for _, l in order])
@@ -145,6 +150,15 @@ class Atom:
         self.unassigned = unassigned
     
     def add_electron(self, electron: Particle) -> bool:
+        """
+        Adds an electron to the atom.
+
+        Args:
+        - electron (Particle): the electron to be added
+
+        Returns:
+        - bool: True if the electron was added, False otherwise
+        """
         for orbital in self._orbitals:
             if orbital.can_add(electron):
                 self.electrons.append(electron)
@@ -153,6 +167,12 @@ class Atom:
         return False
     
     def remove_electron(self) -> bool:
+        """
+        Removes an electron from the atom.
+
+        Returns:
+        - bool: True if an electron was removed, False otherwise
+        """
         if len(self.electrons) > 0:
             self.electrons.pop()
             self.configure()
@@ -160,6 +180,15 @@ class Atom:
         return False
     
     def remove_electron(self, electron: Particle) -> bool:
+        """
+        Removes a specific electron from the atom.
+
+        Args:
+        - electron (Particle): the electron to be removed
+
+        Returns:
+        - bool: True if the electron was removed, False otherwise
+        """
         if electron.index == -1:
             return False
         new_electrons = typed.List.empty_list(particle_type)
@@ -178,6 +207,15 @@ class Atom:
         return False
     
     def covalent_bond(self, other: "Atom") -> bool:
+        """
+        Forms a covalent bond with another atom.
+
+        Args:
+        - other (Atom): the other atom to form a bond with
+
+        Returns:
+        - bool: True if the bond was formed, False otherwise
+        """
         if self.stable or other.stable:
             return False
         
@@ -211,6 +249,15 @@ class Atom:
         return True
 
     def add_electron_to_valence_shell(self, electron: Particle) -> bool:
+        """
+        Adds an electron to the valence shell of the atom.
+
+        Args:
+        - electron (Particle): the electron to be added
+
+        Returns:
+        - bool: True if the electron was added, False otherwise
+        """
         valence_shell = max([orbital.n for orbital in self._orbitals])
         if self.debug_mode: print(f"Adding electron to valence shell {valence_shell}")
         
@@ -238,6 +285,15 @@ class Atom:
         return False
 
     def ionic_bond(self, other: "Atom") -> bool:
+        """
+        Forms an ionic bond with another atom.
+
+        Args:
+        - other (Atom): the other atom to form a bond with
+
+        Returns:
+        - bool: True if the bond was formed, False otherwise
+        """
         if self.stable or other.stable:
             return False
         
@@ -257,6 +313,12 @@ class Atom:
 
     @property
     def valence_electrons(self):
+        """
+        Returns the valence electrons of the atom.
+
+        Returns:
+        - list: a list of valence electrons
+        """
         valence_electrons = []
 
         for orbital in self._orbitals:
@@ -267,6 +329,12 @@ class Atom:
 
     @property
     def stable(self):
+        """
+        Checks if the atom is stable.
+
+        Returns:
+        - bool: True if the atom is stable, False otherwise
+        """
         valence_electrons = 0
         max_valence = 8 if self.atomic_number < 18 else 18
 
@@ -278,30 +346,63 @@ class Atom:
 
     @property
     def mass(self):
+        """
+        Returns the mass of the atom.
+
+        Returns:
+        - float: the mass of the atom
+        """
         return sum([proton.mass for proton in self.protons]) \
             + sum([neutron.mass for neutron in self.neutrons]) \
             + sum([_electron.mass for _electron in self.electrons])
     
     @property
     def atomic_number(self):
+        """
+        Returns the atomic number of the atom.
+
+        Returns:
+        - int: the atomic number of the atom
+        """
         return len(self.protons)
     
     @property
     def charge(self):
+        """
+        Returns the charge of the atom.
+
+        Returns:
+        - float: the charge of the atom
+        """
         return sum([proton.charge for proton in self.protons]) \
             - sum([_electron.charge for _electron in self.electrons])
     
     @property
     def spin(self):
+        """
+        Returns the spin of the atom.
+
+        Returns:
+        - float: the spin of the atom
+        """
         return sum([proton.spin for proton in self.protons]) \
             + sum([neutron.spin for neutron in self.neutrons]) \
             + sum([_electron.spin for _electron in self.electrons])
     
     @property
     def momentum(self):
+        """
+        Returns the momentum of the atom.
+
+        Returns:
+        - float: the momentum of the atom
+        """
         return np.linalg.norm(self.mass * self.velocity)
 
     def _debug_mode(self):
+        """
+        Enables debug mode for the atom and its orbitals.
+        """
         self.debug_mode = True
         for orbital in self._orbitals:
             orbital.debug_mode = True
@@ -309,6 +410,20 @@ class Atom:
 @njit
 def atom(n_protons: int, n_neutrons: int, n_electrons: int, position: list[float] | None = None, 
          velocity: list[float] | None = None, debug: bool = False) -> Atom:
+    """
+    Creates a new atom with the given number of protons, neutrons, electrons, position, velocity, and debug mode.
+
+    Args:
+        n_protons (int): The number of protons in the atom.
+        n_neutrons (int): The number of neutrons in the atom.
+        n_electrons (int): The number of electrons in the atom.
+        position (list[float] | None, optional): The position of the atom. Defaults to None.
+        velocity (list[float] | None, optional): The velocity of the atom. Defaults to None.
+        debug (bool, optional): Flag for debug mode. Defaults to False.
+
+    Returns:
+        Atom: A new atom object
+    """
     if position is None:
         position = NAN_VECTOR
     if velocity is None:

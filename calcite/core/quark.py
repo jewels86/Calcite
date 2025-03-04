@@ -38,7 +38,7 @@ class Quark:
         - data (dict): additional data about the quark
 
         Returns:
-        - Quark: a Quark object with the specified attributes
+            Quark: a Quark object with the specified attributes
         """
         self.type: str = type
         "The type of quark (up, down, strange, charm, top, bottom)."
@@ -53,32 +53,68 @@ class Quark:
         self.debug_mode: bool = False
 
 @njit
-def up_quark(color='red'):
+def up_quark() -> Quark:
+    """
+    Creates a new up quark.
+
+    Returns:
+        Quark: a new up quark object
+    """
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('up', 2/3, 0.0022, 0.5, data)
 
 @njit
-def down_quark(color='green'):
+def down_quark() -> Quark:
+    """
+    Creates a new down quark.
+
+    Returns:
+        Quark: a new down quark object
+    """
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('down', -1/3, 0.0047, 0.5, data)
 
 @njit
-def strange_quark(color='blue'):
+def strange_quark() -> Quark:
+    """
+    Creates a new strange quark.
+
+    Returns:
+        Quark: a new strange quark object
+    """
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('strange', -1/3, 0.093, 0.5, data)
 
 @njit
-def charm_quark(color='cyan'):
+def charm_quark() -> Quark:
+    """
+    Creates a new charm quark.
+
+    Returns:
+        Quark: 
+    """
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('charm', 2/3, 1.27, 0.5, data)
 
 @njit
-def top_quark(color='magenta'):
+def top_quark() -> Quark:
+    """
+    Creates a new top quark.
+
+    Returns:
+        Quark: a new top quark object
+    """
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('top', 2/3, 173.1, 0.5, data)
 
 @njit
-def bottom_quark(color='yellow'):
+def bottom_quark() -> Quark:
+    """
+    Creates a new bottom quark.
+
+    Returns:
+        Quark: a new bottom quark object
+    """
     data = typed.Dict.empty(types.unicode_type, float64)
     return Quark('bottom', -1/3, 4.18, 0.5, data)
 
