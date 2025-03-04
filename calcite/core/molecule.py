@@ -4,12 +4,14 @@ from numba import types, typed, typeof
 
 molecule_spec = [
     ('atoms', types.ListType(atom_type)),
+    ('index', types.int64)
 ]
 
 @jitclass(molecule_spec)
 class Molecule:
     def __init__(self, atoms: list):
         self.atoms = typed.List(atoms)
+        self.index = -1
     
     @property
     def ionic_bonds(self):

@@ -139,11 +139,13 @@ class Atom:
         return False
     
     def remove_electron(self, electron: Particle) -> bool:
+        if electron.index == -1:
+            return False
         new_electrons = typed.List.empty_list(particle_type)
         removed = False
 
         for e in self.electrons:
-            if e != electron or removed:
+            if e.index != electron.index or removed:
                 new_electrons.append(e)
             else:
                 removed = True
