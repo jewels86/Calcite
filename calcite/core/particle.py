@@ -21,8 +21,39 @@ particle_spec = [
 
 @jitclass(particle_spec)
 class Particle:
+    """
+    A class representing a particle in the Standard Model of particle physics.
+
+    Attributes:
+    - mass (float): the mass of the particle in atomic units
+    - charge (float): the electric charge of the particle
+    - spin (float): the spin of the particle
+    - position (np.ndarray): the position of the particle in 3D space (may be NaN)
+    - velocity (np.ndarray): the velocity of the particle in 3D space (may be NaN)
+    - energy (float): the energy of the particle in Hartrees
+    - data (dict): additional data about the particle
+
+    Properties:
+    - momentum (np.ndarray): the momentum of the particle
+    - kinetic_energy (float): the kinetic energy of the particle
+    """
     def __init__(self, mass: float, charge: float, spin: float, position: list[float] | None, 
                  velocity: list[float] | None, energy: float, data: dict[str, object]):
+        """
+        Initialize a Particle object with the given mass, charge, spin, position, velocity, energy, and data.
+
+        Args:
+        - mass (float): the mass of the particle in atomic units
+        - charge (float): the electric charge of the particle
+        - spin (float): the spin of the particle
+        - position (list[float]): the position of the particle in 3D space
+        - velocity (list[float]): the velocity of the particle in 3D space
+        - energy (float): the energy of the particle in Hartrees
+        - data (dict): additional data about the particle
+
+        Returns:
+        - Particle: a Particle object with the specified attributes
+        """
         nan_array = np.full(3, np.nan, dtype=np.float64)
 
         self.mass: float = mass

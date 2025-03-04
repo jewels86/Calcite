@@ -1,4 +1,3 @@
-from calcite.core.quark import up_quark, down_quark
 import numba as nb
 import numpy as np
 
@@ -18,12 +17,11 @@ NEUTRON_MASS = 1838.68366048
 NEUTRON_CHARGE = 0.0
 NEUTRON_SPIN = 0.5
 
-PROTON_QUARKS = [up_quark(), up_quark(), down_quark()]
-NEUTRON_QUARKS = [up_quark(), down_quark(), down_quark()]
-
 LIST = nb.typed.List
 LIST_TYPE = nb.types.ListType
 
 NAN_VECTOR = np.array([np.nan, np.nan, np.nan], dtype=np.float64)
 
 ORBITAL_ORDER = nb.typed.List([(n, l) for n in range(1, 7) for l in range(n)])
+
+COLORS = nb.typed.List(['red', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'black', 'white', 'gray', 'purple', 'orange'])

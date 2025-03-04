@@ -1,5 +1,6 @@
-from numba import float64, int64, types, njit, typeof
+from numba import float64, int64, types, njit, typeof, typed
 from numba.experimental import jitclass
+from calcite.constants import COLORS
 
 spec = [
     ('type', types.string),
@@ -8,41 +9,77 @@ spec = [
     ('spin', float64),
     ('color', types.string),
     ('index', int64),
+    ('data', types.DictType(types.string, types.float64)),
     ('debug_mode', types.boolean)
 ]
 
 @jitclass(spec)
 class Quark:
-    def __init__(self, type, charge, mass, spin, color='white'):
+    """
+    A basic class to represent a quark in the Standard Model of particle physics.
+
+    Attributes:
+    - type (str): the type of quark (up, down, strange, charm, top, bottom)
+    - charge (float): the electric charge of the quark
+    - mass (float): the mass of the quark in MeV/c^2
+    - spin (float): the spin of the quark
+    - data (dict): additional data about the quark
+    - debug_mode (bool): a flag to enable debug mode
+    """
+    def __init__(self, type: str, charge: float, mass: float, spin: float, data: dict):
+        """
+        Initialize a Quark object with the given type, charge, mass, spin, and data.
+        
+        Args:
+        - type (str): the type of quark (up, down, strange, charm, top, bottom)
+        - charge (float): the electric charge of the quark
+        - mass (float): the mass of the quark in MeV/c^2
+        - spin (float): the spin of the quark
+        - data (dict): additional data about the quark
+
+        Returns:
+        - Quark: a Quark object with the specified attributes
+        """
         self.type: str = type
+        "The type of quark (up, down, strange, charm, top, bottom)."
         self.charge: float = charge
+        "The electric charge of the quark."
         self.mass: float = mass
+        "The mass of the quark in atomic units."
         self.spin: float = spin
-        self.color: float = color
+        "The spin of the quark."
+        self.data = data
+        "Additional data about the quark."
         self.debug_mode: bool = False
 
 @njit
 def up_quark(color='red'):
-    return Quark('up', 2/3, 0.0022, 0.5, color)
+    data = typed.Dict.empty(types.unicode_type, float64)
+    return Quark('up', 2/3, 0.0022, 0.5, data)
 
 @njit
 def down_quark(color='green'):
-    return Quark('down', -1/3, 0.0047, 0.5, color)
+    data = typed.Dict.empty(types.unicode_type, float64)
+    return Quark('down', -1/3, 0.0047, 0.5, data)
 
 @njit
 def strange_quark(color='blue'):
-    return Quark('strange', -1/3, 0.093, 0.5, color)
+    data = typed.Dict.empty(types.unicode_type, float64)
+    return Quark('strange', -1/3, 0.093, 0.5, data)
 
 @njit
 def charm_quark(color='cyan'):
-    return Quark('charm', 2/3, 1.27, 0.5, color)
+    data = typed.Dict.empty(types.unicode_type, float64)
+    return Quark('charm', 2/3, 1.27, 0.5, data)
 
 @njit
 def top_quark(color='magenta'):
-    return Quark('top', 2/3, 173.1, 0.5, color)
+    data = typed.Dict.empty(types.unicode_type, float64)
+    return Quark('top', 2/3, 173.1, 0.5, data)
 
 @njit
 def bottom_quark(color='yellow'):
-    return Quark('bottom', -1/3, 4.18, 0.5, color)
+    data = typed.Dict.empty(types.unicode_type, float64)
+    return Quark('bottom', -1/3, 4.18, 0.5, data)
 
 quark_type = typeof(up_quark())
