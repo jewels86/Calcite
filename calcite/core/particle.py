@@ -15,7 +15,8 @@ particle_spec = [
     ('velocity', float64[:]),
     ('energy', float64),
     ('data', types.DictType(types.unicode_type, float64)),
-    ('index', int64)
+    ('index', int64),
+    ('debug_mode', types.boolean)
 ]
 
 @jitclass(particle_spec)
@@ -31,6 +32,7 @@ class Particle:
         self.velocity = np.array(velocity, dtype=np.float64) if velocity is not None else nan_array
         self.energy = energy if energy > 0 else self.mass
         self.data = data
+        self.debug_mode = False
 
     @property
     def momentum(self):
@@ -45,7 +47,8 @@ composite_particle_spec = [
     ('velocity', float64[:]),
     ('quarks', types.ListType(quark_type)),
     ('data', types.DictType(types.unicode_type, float64)),
-    ('index', int64)
+    ('index', int64),
+    ('debug_mode', types.boolean)
 ]
 
 @jitclass(composite_particle_spec)
@@ -57,6 +60,7 @@ class CompositeParticle:
         self.velocity = velocity if velocity is not None else nan_array
         self.quarks = quarks
         self.data = data
+        self.debug_mode = False
 
     @property
     def mass(self):

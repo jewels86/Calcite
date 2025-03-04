@@ -7,7 +7,8 @@ spec = [
     ('mass', float64),
     ('spin', float64),
     ('color', types.string),
-    ('index', int64)
+    ('index', int64),
+    ('debug_mode', types.boolean)
 ]
 
 @jitclass(spec)
@@ -18,6 +19,7 @@ class Quark:
         self.mass: float = mass
         self.spin: float = spin
         self.color: float = color
+        self.debug_mode: bool = False
 
 @njit
 def up_quark(color='red'):
