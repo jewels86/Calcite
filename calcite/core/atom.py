@@ -27,8 +27,9 @@ class Orbital:
 
     def can_add(self, electron: Particle):
         if self.debug_mode: print(f"Orbital.can_add: Checking if electron with spin ({'up' if electron.spin == 0.5 else 'down'}) can be added to orbital {self.n}, {self.l}, {self.m}")
-        if self.debug_mode: print(f"Orbital.can_add: Current electrons in orbital: {len(self.electrons)}")
-        can_add = len(self.electrons) < 2 and (electron.spin != self.electrons[0].spin) if len(self.electrons) > 0 else True
+        if self.debug_mode: print(f"Orbital.can_add: Current electrons in orbital: {len(self.electrons)} ({('up' if self.electrons[0].spin == 0.5 else 'down') if len(self.electrons) > 0 else 'None'\
+                                                                                                           }, {('up' if self.electrons[1].spin == 0.5 else 'down') if len(self.electrons) > 1 else 'None'})")
+        can_add = len(self.electrons) < 2 and (len(self.electrons) == 0 or electron.spin != self.electrons[0].spin)
         if self.debug_mode: print(f"Orbital.can_add: Can add: {can_add}")
         return can_add
         # orbitals can only hold two electrons - one with spin up and one with spin down
@@ -61,7 +62,7 @@ atom_spec = [
 
 @jitclass(atom_spec)
 class Atom:
-    def __init__(self, position, velocity, n_protons, n_neutrons, n_electrons):
+    def __init__(self, position, velocity, n_protons, n_neutrons, n_electrons, debug):
         self.position = position
         self.velocity = velocity
         self.protons = typed.List([proton() for _ in range(n_protons)])
@@ -73,7 +74,7 @@ class Atom:
         self.covalent_bonds = typed.List.empty_list(awi_electron_electron)
         self.unassigned = typed.List.empty_list(particle_type)
         self.index = -1
-        self.debug_mode = False
+        self.debug_mode = debug
         self.setup_electrons(n_electrons)
         self.configure()
 
@@ -87,6 +88,7 @@ class Atom:
                     new_electron = electron(n, l, m)
                     new_electron.spin = 0.5 if added % 2 == 0 else -0.5
                     self.electrons.append(new_electron)
+                    if self.debug_mode: print(f"Added electron with spin {'up' if new_electron.spin == 0.5 else 'down'} to orbital {n}, {l}, {m}")
                     added += 1
         
     def configure(self, order: list = None) -> None:
@@ -108,8 +110,8 @@ class Atom:
                     if added < len(self.electrons):
                         electron = self.electrons[added]
                         if orbital.add(electron):
-                            #if self.debug: 
-                            print(f"Assigned electron with spin {electron.spin} to orbital {n}, {l}, {m}")
+                            if self.debug_mode: 
+                                print(f"Assigned electron with spin {'up' if electron.spin == 0.5 else 'down'} to orbital {n}, {l}, {m}")
                             added += 1
                         else:
                             unassigned.append(electron)
@@ -130,14 +132,14 @@ class Atom:
         self._orbitals = typed.List(to_stay)
 
         if added < len(self.electrons):
-            if self.debug:
-                print(f"Warning in calcite.Atom.configure: {len(self.electrons) - added} electrons remain unassigned.")
+            if self.debug_mode:
+                print(f"Atom.configure: {len(self.electrons) - added} electrons remain unassigned.")
                 print(f"Unassigned electrons will be stored in the unassigned list.")
             raise UnassignedElectronsError("Unassigned electrons remain.")
         
         if len(self.electrons) > capacity:
-            if self.debug:
-                print(f"Warning in calcite.Atom.configure: Atom has {len(self.electrons)} electrons, but only {capacity} can be assigned.")
+            if self.debug_mode:
+                print(f"Atom.configure: Atom has {len(self.electrons)} electrons, but only {capacity} can be assigned.")
                 print(f"Excess electrons will be stored in the unassigned list.")
             raise UnassignedElectronsError("Excess electrons remain.")
         self.unassigned = unassigned
@@ -177,7 +179,6 @@ class Atom:
     
     def covalent_bond(self, other: "Atom") -> bool:
         if self.stable or other.stable:
-            print(1)
             return False
         
         valence_self = self.valence_electrons
@@ -187,16 +188,22 @@ class Atom:
         unpaired_other = [e for e in valence_other if e.spin == 0.5]
 
         if len(unpaired_self) == 0 or len(unpaired_other) == 0:
-            print(2)
             return False
 
+        original_self_spin = unpaired_self[0].spin
+        original_other_spin = unpaired_other[0].spin
         unpaired_self[0].spin = -0.5
-        unpaired_other[0].spin = -0.5
+        unpaired_other[0].spin = 0.5
 
         if not self.add_electron_to_valence_shell(unpaired_other[0]) or \
             not other.add_electron_to_valence_shell(unpaired_self[0]):
-            print(3)
-            return False
+            unpaired_self[0].spin = 0.5
+            unpaired_other[0].spin = -0.5
+            if not self.add_electron_to_valence_shell(unpaired_other[0]) or \
+                not other.add_electron_to_valence_shell(unpaired_self[0]):
+                unpaired_self[0].spin = original_self_spin
+                unpaired_other[0].spin = original_other_spin
+                return False
         
         self.covalent_bonds.append((other.index, unpaired_self[0], unpaired_other[0]))
         other.covalent_bonds.append((self.index, unpaired_other[0], unpaired_self[0]))
@@ -205,14 +212,29 @@ class Atom:
 
     def add_electron_to_valence_shell(self, electron: Particle) -> bool:
         valence_shell = max([orbital.n for orbital in self._orbitals])
-        print(f"Adding electron to valence shell {valence_shell}")
+        if self.debug_mode: print(f"Adding electron to valence shell {valence_shell}")
+        
         for orbital in self._orbitals:
             if orbital.n == valence_shell and orbital.can_add(electron):
-                print(f"Adding electron to orbital {orbital.n}, {orbital.l}, {orbital.m}")
+                if self.debug_mode: print(f"Adding electron to orbital {orbital.n}, {orbital.l}, {orbital.m}")
                 orbital.add(electron)
                 self.electrons.append(electron)
                 return True
-        print("Failed to add electron to valence shell")
+        
+        for l in range(valence_shell):
+            for m in range(-l, l + 1):
+                if (valence_shell, l, m) not in self.orbitals:
+                    if self.debug_mode: print(f"Creating new orbital {valence_shell}, {l}, {m} for electron")
+                    self.orbitals[(valence_shell, l, m)] = len(self._orbitals)
+                    new_orbital = Orbital(valence_shell, l, m, typed.List.empty_list(particle_type))
+                    self._orbitals.append(new_orbital)
+                    if new_orbital.can_add(electron):
+                        if self.debug_mode: print(f"Adding electron to new orbital {valence_shell}, {l}, {m}")
+                        new_orbital.add(electron)
+                        self.electrons.append(electron)
+                        return True
+        
+        if self.debug_mode: print("Failed to add electron to valence shell")
         return False
 
     def ionic_bond(self, other: "Atom") -> bool:
@@ -252,7 +274,7 @@ class Atom:
             if orbital.n == max([o.n for o in self._orbitals]):
                 valence_electrons += len(orbital.electrons)
         
-        return valence_electrons == max_valence or valence_electrons == 0
+        return valence_electrons == max_valence or valence_electrons == 0 or valence_electrons == 2
 
     @property
     def mass(self):
@@ -286,11 +308,11 @@ class Atom:
 
 @njit
 def atom(n_protons: int, n_neutrons: int, n_electrons: int, position: list[float] | None = None, 
-         velocity: list[float] | None = None) -> Atom:
+         velocity: list[float] | None = None, debug: bool = False) -> Atom:
     if position is None:
         position = NAN_VECTOR
     if velocity is None:
         velocity = NAN_VECTOR
-    return Atom(position, velocity, n_protons, n_neutrons, n_electrons)
+    return Atom(position, velocity, n_protons, n_neutrons, n_electrons, debug)
 
 atom_type = typeof(atom(0, 0, 0))
