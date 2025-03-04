@@ -138,6 +138,22 @@ class Atom:
             return True
         return False
     
+    def remove_electron(self, electron: Particle) -> bool:
+        new_electrons = typed.List.empty_list(particle_type)
+        removed = False
+
+        for e in self.electrons:
+            if e != electron or removed:
+                new_electrons.append(e)
+            else:
+                removed = True
+
+        if removed:
+            self.electrons = new_electrons
+            self.configure()
+            return True
+        return False
+    
     def covalent_bond(self, other: "Atom") -> bool:
         if self.stable or other.stable:
             return False
@@ -157,11 +173,11 @@ class Atom:
         unpaired_self[0].spin = -0.5
         unpaired_other[0].spin = -0.5
 
-        self.electrons.append(unpaired_other[0])
-        other.electrons.append(unpaired_self[0])
+        self.remove_electron(unpaired_self[0])
+        other.remove_electron(unpaired_other[0])
 
-        self.configure()
-        other.configure()
+        self.add_electron(unpaired_other[0])
+        other.add_electron(unpaired_self[0])
 
         return True
     
