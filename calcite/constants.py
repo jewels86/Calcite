@@ -26,4 +26,4 @@ LIST_TYPE = nb.types.ListType
 
 NAN_VECTOR = np.array([np.nan, np.nan, np.nan], dtype=np.float64)
 
-ORBITAL_ORDER = [(n, l) for n in range(1, 7) for l in range(n)]
+ORBITAL_ORDER = nb.typed.List([(n, l) for n in range(1, 7) for l in range(n)])
