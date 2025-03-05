@@ -152,8 +152,7 @@ structref.define_proxy(Particle, ParticleType, [
 # endregion
 # region Particle creation methods
 @njit
-def electron(n: int, l: int, m: int, position: list[float] | None = None, 
-             velocity: list[float] = None) -> Particle:
+def electron(n, l, m, position=None, velocity=None) -> Particle:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data["type"] = "electron"
     data["n"] = str(n)
