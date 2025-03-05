@@ -1,8 +1,9 @@
 from numba.experimental import structref
 from numba import njit, types, typed, float64
-from numba.extending import overload
+from numba.extending import overload_method
 from calcite.formulas import magnitude
 from calcite import constants
+import numpy as np
 
 # region ParticleType and Particle
 # region Class definitions
@@ -19,7 +20,7 @@ class Particle(structref.StructRefProxy):
     def mass(self):
         return Particle_get_mass(self)
     
-    @property.setter
+    @mass.setter
     def mass(self, mass):
         Particle_set_mass(self, mass)
     
@@ -27,7 +28,7 @@ class Particle(structref.StructRefProxy):
     def charge(self):
         return Particle_get_charge(self)
 
-    @property.setter
+    @charge.setter
     def charge(self, charge):
         Particle_set_charge(self, charge)
     
@@ -35,7 +36,7 @@ class Particle(structref.StructRefProxy):
     def spin(self):
         return Particle_get_spin(self)
     
-    @property.setter
+    @spin.setter
     def spin(self, spin):
         Particle_set_spin(self, spin)
     
@@ -43,7 +44,7 @@ class Particle(structref.StructRefProxy):
     def position(self):
         return Particle_get_position(self)
     
-    @property.setter
+    @position.setter
     def position(self, position):
         Particle_set_position(self, position)
     
@@ -51,7 +52,7 @@ class Particle(structref.StructRefProxy):
     def velocity(self):
         return Particle_get_velocity(self)
 
-    @property.setter
+    @velocity.setter
     def velocity(self, velocity):
         Particle_set_velocity(self, velocity)
     
@@ -59,29 +60,12 @@ class Particle(structref.StructRefProxy):
     def data(self):
         return Particle_get_data(self)
     
-    @property.setter
+    @data.setter
     def data(self, data):
         Particle_set_data(self, data)
-
-    @property
-    def momentum(self):
-        return momentum(self)
-    
-    @property
-    def kinetic_energy(self):
-        return kinetic_energy(self)
-    
-    @property
-    def relativistic_mass(self):
-        return relativistic_mass(self)
-    
-    @property
-    def energy(self):
-        return energy(self)
     
 # endregion
 # region Particle methods
-
 # region Fields
 @njit
 def Particle_get_mass(self):
@@ -131,37 +115,66 @@ def Particle_set_velocity(self, velocity):
 def Particle_set_data(self, data):
     self.data = data
 # endregion
-# region Properties
-@njit
-def momentum(self):
-    return self.mass * self.velocity
+# region Class methods
 
-@njit
-def kinetic_energy(self):
-    return 0.5 * self.mass * magnitude(self.velocity)**2
+@overload_method(ParticleType, 'momentum')
+def Particle_momentum(self):
+    def impl(self):
+        return self.mass * self.velocity
+    return impl
 
-@njit
-def relativistic_mass(self):
-    return self.mass / (1 - magnitude(self.velocity)**2)**0.5
+@overload_method(ParticleType, 'kinetic_energy')
+def Particle_kinetic_energy(self):
+    def impl(self):
+        return 0.5 * self.mass * magnitude(self.velocity) ** 2
+    return impl
 
-@njit
-def energy(self):
-    return self.relativistic_mass() * magnitude(self.velocity)
+@overload_method(ParticleType, 'relativistic_mass')
+def Particle_relativistic_mass(self):
+    def impl(self):
+        return self.mass / (1 - magnitude(self.velocity) ** 2 / constants.C ** 2) ** 0.5
+    return impl
 
+@overload_method(ParticleType, 'energy')
+def Particle_energy(self):
+    def impl(self):
+        return self.relativistic_mass() * constants.C ** 2
+    return impl
 
-structref.define_proxy(Particle, ParticleType, ['mass', 'charge', 'spin', 'position', 'velocity', 'data'])
 # endregion
 # endregion
 
+structref.define_proxy(Particle, ParticleType, [
+    'mass', 'charge', 
+    'spin', 'position', 
+    'velocity', 'data'
+])
+# endregion
 # region Particle creation methods
 @njit
 def electron(n: int, l: int, m: int, position: list[float] | None = None, 
              velocity: list[float] = None) -> Particle:
+    """
+    Creates a new electron with the given quantum numbers.
+
+    Args:
+        n (int): The principal quantum number.
+        l (int): The azimuthal quantum number.
+        m (int): The magnetic quantum number.
+        position (list[float] | None, optional): The position of the electron. Defaults to None.
+        velocity (list[float], optional): The velocity of the electron. Defaults to None.
+        energy (float, optional): The energy of the electron. Defaults to -1.
+
+    Returns:
+        Particle: A new electron object
+    """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data["type"] = "electron"
     data["n"] = str(n)
     data["l"] = str(l)
     data["m"] = str(m)
+    position = np.array(position, dtype=np.float64) if position is not None else None
+    velocity = np.array(velocity, dtype=np.float64) if velocity is not None else None
 
     return Particle(
         constants.ELECTRON_MASS, 
@@ -171,3 +184,5 @@ def electron(n: int, l: int, m: int, position: list[float] | None = None,
         velocity, 
         data
     )
+
+# endregion
