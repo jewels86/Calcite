@@ -1,5 +1,5 @@
 from numba.experimental import structref
-from numba import njit, types, typed, float64
+from numba import njit, types, typed
 from numba.extending import overload_method
 from calcite.formulas import magnitude
 from calcite import constants
@@ -115,7 +115,7 @@ def Particle_set_velocity(self, velocity):
 def Particle_set_data(self, data):
     self.data = data
 # endregion
-# region Class methods
+# region Methods
 
 @overload_method(ParticleType, 'momentum')
 def Particle_momentum(self):
