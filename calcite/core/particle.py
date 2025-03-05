@@ -154,20 +154,6 @@ structref.define_proxy(Particle, ParticleType, [
 @njit
 def electron(n: int, l: int, m: int, position: list[float] | None = None, 
              velocity: list[float] = None) -> Particle:
-    """
-    Creates a new electron with the given quantum numbers.
-
-    Args:
-        n (int): The principal quantum number.
-        l (int): The azimuthal quantum number.
-        m (int): The magnetic quantum number.
-        position (list[float] | None, optional): The position of the electron. Defaults to None.
-        velocity (list[float], optional): The velocity of the electron. Defaults to None.
-        energy (float, optional): The energy of the electron. Defaults to -1.
-
-    Returns:
-        Particle: A new electron object
-    """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data["type"] = "electron"
     data["n"] = str(n)

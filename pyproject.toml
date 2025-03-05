@@ -24,6 +24,3 @@ Repository = "https://github.com/jewels86/calcite"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["calcite*"]
-
-[tool.setuptools]
-packages = ["stubs"]
