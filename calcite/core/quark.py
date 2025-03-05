@@ -1,6 +1,7 @@
 from numba.experimental import structref
 from numba import njit, types, typed, float64
-from numba.extending import overload
+from numba.extending import overload_method
+from numba.core.errors import TypingError
 
 # region QuarkType and Quark
 # region Class definitions
@@ -69,7 +70,7 @@ def up_quark() -> Quark:
     Returns:
         Quark: a new up quark object
     """
-    data = typed.Dict.empty(types.unicode_type, float64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('up', 2/3, 0.0022, 0.5, data)
 
 @njit
@@ -80,7 +81,7 @@ def down_quark() -> Quark:
     Returns:
         Quark: a new down quark object
     """
-    data = typed.Dict.empty(types.unicode_type, float64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('down', -1/3, 0.0047, 0.5, data)
 
 @njit
@@ -91,7 +92,7 @@ def strange_quark() -> Quark:
     Returns:
         Quark: a new strange quark object
     """
-    data = typed.Dict.empty(types.unicode_type, float64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('strange', -1/3, 0.093, 0.5, data)
 
 @njit
@@ -102,7 +103,7 @@ def charm_quark() -> Quark:
     Returns:
         Quark: 
     """
-    data = typed.Dict.empty(types.unicode_type, float64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('charm', 2/3, 1.27, 0.5, data)
 
 @njit
@@ -113,7 +114,7 @@ def top_quark() -> Quark:
     Returns:
         Quark: a new top quark object
     """
-    data = typed.Dict.empty(types.unicode_type, float64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('top', 2/3, 173.1, 0.5, data)
 
 @njit
@@ -124,7 +125,7 @@ def bottom_quark() -> Quark:
     Returns:
         Quark: a new bottom quark object
     """
-    data = typed.Dict.empty(types.unicode_type, float64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('bottom', -1/3, 4.18, 0.5, data)
 
 #endregion
