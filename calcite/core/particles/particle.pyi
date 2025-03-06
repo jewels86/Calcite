@@ -42,7 +42,7 @@ class Particle:
     """Returns the relativistic mass of the particle."""
 
 def electron(n: int, l: int, m: int, position: list[float] | None = None, 
-             velocity: list[float] = None) -> Particle: ...
+             velocity: list[float] = None, index: int = -1) -> Particle: ...
 """
 Creates a new electron with the given quantum numbers.
 
@@ -55,4 +55,21 @@ Args:
 
 Returns:
     Particle: A new electron object
+"""
+
+def particle(mass: float, charge: float, spin: float, position: list[float] | None = None, 
+             velocity: list[float] | None = None, index: int = -1) -> Particle: ...
+"""
+Creates a new particle with the given properties.
+
+Args:
+    mass (float): The mass of the particle.
+    charge (float): The electric charge of the particle.
+    spin (float): The spin of the particle.
+    position (list[float] | None, optional): The position of the particle. Defaults to None.
+    velocity (list[float] | None, optional): The velocity of the particle. Defaults to None.
+    index (int, optional): The index of the particle. Defaults to -1.
+
+Returns:
+    Particle: A new particle object
 """

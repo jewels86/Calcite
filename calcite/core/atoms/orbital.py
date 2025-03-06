@@ -7,7 +7,7 @@ import numpy as np
 
 # region OrbitalType and Orbital
 # region Class definitions
-@structref
+@structref.register
 class OrbitalType(types.StructRef):
     def preprocess_fields(self, fields):
         return tuple((name, types.unliteral(typ)) for name, typ in fields)

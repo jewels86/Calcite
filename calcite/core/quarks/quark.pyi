@@ -25,6 +25,8 @@ class Quark:
     """Additional data about the quark."""
     debug_mode: bool
     """A flag to enable debug mode."""
+    index: int
+    """The quark world index."""
 
 def up_quark() -> Quark: ...
 """

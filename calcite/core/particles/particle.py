@@ -13,8 +13,9 @@ class ParticleType(types.StructRef):
         return tuple((name, types.unliteral(typ)) for name, typ in fields)
     
 class Particle(structref.StructRefProxy):
-    def __new__(self, mass, charge, spin, position, velocity, data):
-        return structref.StructRefProxy.__new__(self, mass, charge, spin, position, velocity, data)
+    def __new__(self, mass, charge, spin, position, velocity, data, index: int = -1):
+        instance = structref.StructRefProxy.__new__(self, mass, charge, spin, position, velocity, data, index)
+        return instance
     
     @property
     def mass(self):
@@ -64,6 +65,14 @@ class Particle(structref.StructRefProxy):
     def data(self, data):
         Particle_set_data(self, data)
     
+    @property
+    def index(self):
+        return Particle_get_index(self)
+
+    @index.setter
+    def index(self, index):
+        Particle_set_index(self, index)
+    
 # endregion
 # region Particle methods
 # region Fields
@@ -92,6 +101,10 @@ def Particle_get_data(self):
     return self.data
 
 @njit
+def Particle_get_index(self):
+    return self.index
+
+@njit
 def Particle_set_mass(self, mass):
     self.mass = mass
 
@@ -114,6 +127,10 @@ def Particle_set_velocity(self, velocity):
 @njit
 def Particle_set_data(self, data):
     self.data = data
+
+@njit
+def Particle_set_index(self, index):
+    self.index = index
 # endregion
 # region Methods
 
@@ -147,12 +164,12 @@ def Particle_energy(self):
 structref.define_proxy(Particle, ParticleType, [
     'mass', 'charge', 
     'spin', 'position', 
-    'velocity', 'data'
+    'velocity', 'data', 'index'
 ])
 # endregion
 # region Particle creation methods
 @njit
-def electron(n, l, m, position=None, velocity=None) -> Particle:
+def electron(n, l, m, position=None, velocity=None, index: int = -1) -> Particle:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data["type"] = "electron"
     data["n"] = str(n)
@@ -167,7 +184,16 @@ def electron(n, l, m, position=None, velocity=None) -> Particle:
         constants.ELECTRON_SPIN, 
         position, 
         velocity, 
-        data
+        data,
+        index
     )
+
+@njit
+def particle(mass, charge, spin, position=None, velocity=None, index: int = -1) -> Particle:
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
+    position = np.array(position, dtype=np.float64) if position is not None else None
+    velocity = np.array(velocity, dtype=np.float64) if velocity is not None else None
+
+    return Particle(mass, charge, spin, position, velocity, data, index)
 
 # endregion
