@@ -13,7 +13,7 @@ class ParticleType(types.StructRef):
         return tuple((name, types.unliteral(typ)) for name, typ in fields)
     
 class Particle(structref.StructRefProxy):
-    def __new__(self, mass, charge, spin, position, velocity, data, index: int = -1):
+    def __new__(self, mass, charge, spin, position, velocity, data, index):
         instance = structref.StructRefProxy.__new__(self, mass, charge, spin, position, velocity, data, index)
         return instance
     
@@ -169,7 +169,20 @@ structref.define_proxy(Particle, ParticleType, [
 # endregion
 # region Particle creation methods
 @njit
-def electron(n, l, m, position=None, velocity=None, index: int = -1) -> Particle:
+def electron(n, l, m, position=None, velocity=None) -> Particle:
+    """
+    Creates a new electron with the given quantum numbers.
+
+    Args:
+        n (int): The principal quantum number.
+        l (int): The azimuthal quantum number.
+        m (int): The magnetic quantum number.
+        position (list[float] | None, optional): The position of the electron. Defaults to None.
+        velocity (list[float], optional): The velocity of the electron. Defaults to None.
+
+    Returns:
+        Particle: A new electron object
+    """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data["type"] = "electron"
     data["n"] = str(n)
@@ -184,16 +197,29 @@ def electron(n, l, m, position=None, velocity=None, index: int = -1) -> Particle
         constants.ELECTRON_SPIN, 
         position, 
         velocity, 
-        data,
-        index
+        data, -1
     )
 
 @njit
-def particle(mass, charge, spin, position=None, velocity=None, index: int = -1) -> Particle:
+def particle(mass, charge, spin, position=None, velocity=None) -> Particle:
+    """
+    Creates a new particle with the given properties.
+
+    Args:
+        mass (float): The mass of the particle.
+        charge (float): The electric charge of the particle.
+        spin (float): The spin of the particle.
+        position (list[float] | None, optional): The position of the particle. Defaults to None.
+        velocity (list[float] | None, optional): The velocity of the particle. Defaults to None.
+        index (int, optional): The index of the particle. Defaults to -1.
+
+    Returns:
+        Particle: A new particle object
+    """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     position = np.array(position, dtype=np.float64) if position is not None else None
     velocity = np.array(velocity, dtype=np.float64) if velocity is not None else None
 
-    return Particle(mass, charge, spin, position, velocity, data, index)
+    return Particle(mass, charge, spin, position, velocity, data, -1)
 
 # endregion

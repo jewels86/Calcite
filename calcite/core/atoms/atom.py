@@ -31,7 +31,7 @@ class Atom(structref.StructRefProxy):
         initialized = False
 
         return structref.StructRefProxy.__new__(
-            cls, 
+            cls,
             protons, neutrons, electrons,
             orbitals, _orbitals,
             ionic_bonds, covalent_bonds,
