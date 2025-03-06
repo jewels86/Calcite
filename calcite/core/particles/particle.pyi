@@ -1,6 +1,9 @@
 #from typing import 
 import numpy as np
 
+class ParticleType:
+    pass
+
 class Particle:
     """
     A class representing a particle in the Standard Model of particle physics.

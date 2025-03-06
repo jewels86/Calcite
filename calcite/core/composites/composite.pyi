@@ -1,5 +1,8 @@
 import numpy as np
 
+class CompositeParticleType:
+    pass
+
 class CompositeParticle:
     """
     A class representing a composite particle made up of quarks.

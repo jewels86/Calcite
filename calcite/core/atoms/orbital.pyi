@@ -1,6 +1,9 @@
 from typing import List
 from calcite.core.particles.particle import Particle
 
+class OrbitalType:
+    pass
+
 class Orbital:
     """
     A class representing an atomic orbital.

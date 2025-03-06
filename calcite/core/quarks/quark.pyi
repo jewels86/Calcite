@@ -1,6 +1,9 @@
 # from typing import
 import numpy as np
 
+class QuarkType:
+    pass
+
 class Quark:
     """
     A basic class to represent a quark in the Standard Model of particle physics.
