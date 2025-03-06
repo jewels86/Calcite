@@ -28,13 +28,15 @@ class Atom(structref.StructRefProxy):
         ionic_bonds = typed.List.empty_list(awi_pwi)
         covalent_bonds = typed.List.empty_list(awi_pwi_pwi)
         index = -1
+        initialized = False
 
         return structref.StructRefProxy.__new__(
             cls, 
             protons, neutrons, electrons,
             orbitals, _orbitals,
             ionic_bonds, covalent_bonds,
-            position, velocity, data, index
+            position, velocity, data, index,
+            initialized, n_electrons
         )
     
         
