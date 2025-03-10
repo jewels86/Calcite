@@ -5,6 +5,7 @@ from calcite.formulas import magnitude
 from calcite.core.particles.particle import Particle, ParticleType
 from calcite.core.composites.composite import proton, neutron
 from calcite.core.atoms.orbital import Orbital, OrbitalType
+from calcite.core.atoms.atom_functions import *
 import numpy as np
 
 # region AtomType and Atom
@@ -39,4 +40,85 @@ class Atom(structref.StructRefProxy):
             initialized, n_electrons
         )
     
-        
+    @property
+    def protons(self):
+        return Atom_get_protons(self)
+    
+    @protons.setter
+    def protons(self, protons):
+        Atom_set_protons(self, protons)
+
+    @property
+    def neutrons(self):
+        return Atom_get_neutrons(self)
+    
+    @neutrons.setter
+    def neutrons(self, neutrons):
+        Atom_set_neutrons(self, neutrons)
+
+    @property
+    def electrons(self):
+        return Atom_get_electrons(self)
+    
+    @electrons.setter
+    def electrons(self, electrons):
+        Atom_set_electrons(self, electrons)
+    
+    @property
+    def orbitals(self):
+        return Atom_get_orbitals(self)
+    
+    @orbitals.setter
+    def orbitals(self, orbitals):
+        Atom_set_orbitals(self, orbitals)
+
+    @property
+    def _orbitals(self):
+        return Atom_get__orbitals(self)
+    
+    @_orbitals.setter
+    def _orbitals(self, _orbitals):
+        Atom_set__orbitals(self, _orbitals)
+
+# endregion
+# region Atom functions
+# region Fields
+@njit
+def Atom_get_protons(atom):
+    return atom.protons
+
+@njit
+def Atom_set_protons(atom, protons):
+    atom.protons = protons
+
+@njit
+def Atom_get_neutrons(atom):
+    return atom.neutrons
+
+@njit
+def Atom_set_neutrons(atom, neutrons):
+    atom.neutrons = neutrons
+
+@njit
+def Atom_get_electrons(atom):
+    return atom.electrons
+
+@njit
+def Atom_set_electrons(atom, electrons):
+    atom.electrons = electrons
+
+@njit
+def Atom_get_orbitals(atom):
+    return atom.orbitals
+
+@njit
+def Atom_set_orbitals(atom, orbitals):
+    atom.orbitals = orbitals
+
+@njit
+def Atom_get__orbitals(atom):
+    return atom._orbitals
+
+@njit
+def Atom_set__orbitals(atom, _orbitals):
+    atom._orbitals = _orbitals
