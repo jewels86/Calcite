@@ -122,3 +122,26 @@ def Atom_get__orbitals(atom):
 @njit
 def Atom_set__orbitals(atom, _orbitals):
     atom._orbitals = _orbitals
+
+# endregion
+# endregion
+
+structref.define_proxy(Atom, AtomType, [
+    "protons", "neutrons", "electrons",
+    "orbitals", "_orbitals",
+    "ionic_bonds", "covalent_bonds",
+    "position", "velocity",
+    "data", "index", "initialized",
+    "n_electrons"
+])
+
+#  endregion
+
+# region Atom creation functions
+@njit
+def atom(n_protons, n_neutrons, n_electrons, position, velocity):
+    return Atom(
+        n_protons, n_neutrons, n_electrons,
+        position, velocity, typed.Dict.empty(types.unicode_type, types.unicode_type)
+    )
+# endregion

@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit, typed, types
 from calcite.core.composites.composite import proton, neutron 
 from calcite.core.particles.particle import electron, ParticleType, Particle
-from orbital import Orbital, OrbitalType
+from calcite.core.atoms.orbital import Orbital, OrbitalType
 
 @njit
 def init(self, max_n=-1):

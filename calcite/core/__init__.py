@@ -4,3 +4,4 @@ from calcite.core.particles.particle import Particle, electron, ParticleType
 from calcite.core.composites.composite import CompositeParticle, proton, neutron, \
     CompositeParticleType
 from calcite.core.atoms.orbital import Orbital
+from calcite.core.atoms.atom import Atom, AtomType, atom
