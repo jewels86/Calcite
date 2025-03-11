@@ -1,5 +1,5 @@
 from numba.experimental import structref
-from numba import njit, types, typed
+from numba import njit, types, typed, int64
 from numba.extending import overload_method
 from calcite.formulas import magnitude
 from calcite.core.particles.particle import Particle, ParticleType
@@ -20,16 +20,8 @@ awi_pwi = types.Tuple((types.int64, types.int64))
 awi_pwi_pwi = types.Tuple((types.int64, types.int64, types.int64))
 
 class Atom(structref.StructRefProxy):
-    def __new__(cls, n_protons, n_neutrons, n_electrons, position, velocity, data):
-        protons = typed.List([proton() for _ in range(n_protons)])
-        neutrons = typed.List([neutron() for _ in range(n_neutrons)])
-        electrons = typed.List.empty_list(ParticleType)
-        orbitals = typed.Dict.empty(orbital_key_type, types.int64)
-        _orbitals = typed.List.empty_list(OrbitalType)
-        ionic_bonds = typed.List.empty_list(awi_pwi)
-        covalent_bonds = typed.List.empty_list(awi_pwi_pwi)
-        index = -1
-        initialized = False
+    def __new__(cls, protons, neutrons, electrons, orbitals, _orbitals, ionic_bonds, 
+                covalent_bonds, position, velocity, data, index, initialized, n_electrons):
 
         return structref.StructRefProxy.__new__(
             cls,
@@ -140,8 +132,23 @@ structref.define_proxy(Atom, AtomType, [
 # region Atom creation functions
 @njit
 def atom(n_protons, n_neutrons, n_electrons, position, velocity):
-    return Atom(
-        n_protons, n_neutrons, n_electrons,
-        position, velocity, typed.Dict.empty(types.unicode_type, types.unicode_type)
+    protons = typed.List([proton() for _ in range(n_protons)])
+    neutrons = typed.List([neutron() for _ in range(n_neutrons)])
+    electrons = typed.List.empty_list(ParticleType)
+    orbitals = typed.Dict.empty(orbital_key_type, types.int64)
+    _orbitals = typed.List.empty_list(OrbitalType)
+    ionic_bonds = typed.List.empty_list(awi_pwi)
+    covalent_bonds = typed.List.empty_list(awi_pwi_pwi)
+    index = -1
+    initialized = False
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
+    n_electrons = n_electrons
+    a = Atom(
+        protons, neutrons, electrons,
+        orbitals, _orbitals,
+        ionic_bonds, covalent_bonds,
+        position, velocity, data, index, initialized, n_electrons
     )
+    #a.init()
+    return a
 # endregion
