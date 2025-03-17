@@ -131,7 +131,7 @@ structref.define_proxy(Atom, AtomType, [
 
 # region Atom creation functions
 @njit
-def atom(n_protons, n_neutrons, n_electrons, position, velocity):
+def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None):
     protons = typed.List.empty_list(particle_type)
     neutrons = typed.List.empty_list(particle_type)
     electrons = typed.List.empty_list(particle_type)
