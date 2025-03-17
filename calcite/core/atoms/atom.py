@@ -2,9 +2,9 @@ from numba.experimental import structref
 from numba import njit, types, typed, int64
 from numba.extending import overload_method
 from calcite.formulas import magnitude
-from calcite.core.particles.particle import Particle, ParticleType
+from calcite.core.particles.particle import Particle, particle_type
 from calcite.core.composites.composite import proton, neutron
-from calcite.core.atoms.orbital import Orbital, OrbitalType
+from calcite.core.atoms.orbital import Orbital, orbital_type
 from calcite.core.atoms.atom_functions import *
 import numpy as np
 
@@ -132,16 +132,16 @@ structref.define_proxy(Atom, AtomType, [
 # region Atom creation functions
 @njit
 def atom(n_protons, n_neutrons, n_electrons, position, velocity):
-    protons = typed.List.empty_list(ParticleType)
-    neutrons = typed.List.empty_list(ParticleType)
-    electrons = typed.List.empty_list(ParticleType)
-    orbitals = typed.Dict.empty(types.int64, types.int64)
-    _orbitals = typed.List.empty_list(types.int64)
-    ionic_bonds = typed.List.empty_list(types.int64)
-    covalent_bonds = typed.List.empty_list(types.int64)
+    protons = typed.List.empty_list(particle_type)
+    neutrons = typed.List.empty_list(particle_type)
+    electrons = typed.List.empty_list(particle_type)
+    orbitals = typed.Dict.empty(orbital_key_type, types.int64)
+    _orbitals = typed.List.empty_list(orbital_type)
+    ionic_bonds = typed.List.empty_list(awi_pwi)
+    covalent_bonds = typed.List.empty_list(awi_pwi_pwi)
     index = -1
     initialized = False
-    data = typed.Dict.empty(types.int64, types.int64)
+    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     n_electrons = n_electrons
     a = Atom(
         protons, neutrons, electrons,

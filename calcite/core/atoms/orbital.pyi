@@ -35,3 +35,5 @@ class Orbital:
     
     def add(self, electron: Particle) -> bool: ...
     """Adds an electron to the orbital."""
+
+orbital_type = OrbitalType

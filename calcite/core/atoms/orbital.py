@@ -135,4 +135,11 @@ def Orbital_can_add(self):
     return impl
 # endregion
 structref.define_proxy(Orbital, OrbitalType, ['n', 'l', 'm', 'electrons', 'debug_mode'])
+orbital_type = OrbitalType([
+    ('n', types.int64),
+    ('l', types.int64),
+    ('m', types.int64),
+    ('electrons', types.ListType(Particle)),
+    ('debug_mode', types.boolean)
+])
 # endregion
