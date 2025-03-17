@@ -75,3 +75,6 @@ Args:
 Returns:
     Particle: A new particle object
 """
+
+particle_type = ParticleType
+"""The type of a particle object."""

@@ -2,6 +2,7 @@ from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
 from calcite.formulas import magnitude
+from calcite.core.vectors.vector import vector_type, vector
 from calcite import constants
 import numpy as np
 
@@ -166,6 +167,16 @@ structref.define_proxy(Particle, ParticleType, [
     'spin', 'position', 
     'velocity', 'data', 'index'
 ])
+
+particle_type = ParticleType(fields=[
+    ('mass', types.float64),
+    ('charge', types.float64),
+    ('spin', types.float64),
+    ('position', vector_type),
+    ('velocity', vector_type),
+    ('data', types.DictType(types.unicode_type, types.unicode_type)),
+    ('index', types.int64)
+])
 # endregion
 # region Particle creation methods
 @njit
@@ -188,8 +199,8 @@ def electron(n, l, m, position=None, velocity=None) -> Particle:
     data["n"] = str(n)
     data["l"] = str(l)
     data["m"] = str(m)
-    position = np.array(position, dtype=np.float64) if position is not None else None
-    velocity = np.array(velocity, dtype=np.float64) if velocity is not None else None
+    position = position if position is not None else None
+    velocity = velocity if velocity is not None else None
 
     return Particle(
         constants.ELECTRON_MASS, 
@@ -217,8 +228,8 @@ def particle(mass, charge, spin, position=None, velocity=None) -> Particle:
         Particle: A new particle object
     """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
-    position = np.array(position, dtype=np.float64) if position is not None else None
-    velocity = np.array(velocity, dtype=np.float64) if velocity is not None else None
+    position = position if position is not None else None
+    velocity = velocity if velocity is not None else None
 
     return Particle(mass, charge, spin, position, velocity, data, -1)
 

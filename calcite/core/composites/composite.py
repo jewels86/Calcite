@@ -2,6 +2,7 @@ from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
 from calcite.core.quarks.quark import up_quark, down_quark
+from calcite.core.vectors.vector import vector_type, vector
 from calcite import constants
 import numpy as np
 
@@ -119,12 +120,20 @@ def CompositeParticle_bayron_number(self):
 structref.define_proxy(CompositeParticle, CompositeParticleType, [
     'quarks', 'position', 'velocity', 'data'
 ])
+composite_particle_type = CompositeParticleType([
+    ('quarks', types.ListType(types.float64)),
+    ('position', vector_type),
+    ('velocity', vector_type),
+    ('data', types.DictType(types.unicode_type, types.unicode_type))
+])
 # endregion
 # region CompositeParticle creation methods
 @njit
 def proton(position=None, velocity=None):
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data['type'] = 'proton'
+    position = position if position is not None else vector()
+    velocity = velocity if velocity is not None else vector()
     return CompositeParticle(
         typed.List([up_quark(), up_quark(), down_quark()]),
         position,
@@ -136,6 +145,8 @@ def proton(position=None, velocity=None):
 def neutron(position=None, velocity=None):
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data['type'] = 'neutron'
+    position = position if position is not None else vector()
+    velocity = velocity if velocity is not None else vector()
     return CompositeParticle(
         typed.List([up_quark(), down_quark(), down_quark()]),
         position,

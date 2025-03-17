@@ -64,3 +64,4 @@ Returns:
     CompositeParticle: A new neutron object
 """
 
+composite_particle_type = CompositeParticleType

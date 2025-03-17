@@ -112,11 +112,17 @@ def Quark_set_data(self, value: dict):
 @njit
 def Quark_set_index(self, value: int):
     self.index = value
-
+# endregion
+# endregion
 structref.define_proxy(Quark, QuarkType, ['flavor', 'charge', 'mass', 'spin', 'data', 'index'])
-# endregion
-# endregion
-
+quark_type = QuarkType([
+    ('flavor', types.unicode_type),
+    ('charge', types.float64),
+    ('mass', types.float64),
+    ('spin', types.float64),
+    ('data', types.DictType(types.unicode_type, types.unicode_type)),
+    ('index', types.int64)
+])
 #region Quark creation methods
 @njit
 def up_quark() -> Quark:

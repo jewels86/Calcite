@@ -79,3 +79,4 @@ Returns:
     Quark: a new bottom quark object
 """
 
+quark_type = QuarkType
