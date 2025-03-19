@@ -20,13 +20,13 @@ awi_pwi = types.Tuple((types.int64, types.int64))
 awi_pwi_pwi = types.Tuple((types.int64, types.int64, types.int64))
 
 class Atom(structref.StructRefProxy):
-    def __new__(cls, protons, neutrons, electrons, orbitals, _orbitals, ionic_bonds, 
+    def __new__(cls, protons, neutrons, electrons, ref_orbitals, orbitals, ionic_bonds, 
                 covalent_bonds, position, velocity, data, index, initialized, n_electrons):
 
         return structref.StructRefProxy.__new__(
             cls,
             protons, neutrons, electrons,
-            orbitals, _orbitals,
+            ref_orbitals, orbitals,
             ionic_bonds, covalent_bonds,
             position, velocity, data, index,
             initialized, n_electrons
@@ -57,20 +57,20 @@ class Atom(structref.StructRefProxy):
         Atom_set_electrons(self, electrons)
     
     @property
+    def ref_orbitals(self):
+        return Atom_get_ref_orbitals(self)
+    
+    @ref_orbitals.setter
+    def ref_orbitals(self, ref_orbitals):
+        Atom_set_ref_orbitals(self, ref_orbitals)
+
+    @property
     def orbitals(self):
         return Atom_get_orbitals(self)
     
     @orbitals.setter
     def orbitals(self, orbitals):
         Atom_set_orbitals(self, orbitals)
-
-    @property
-    def _orbitals(self):
-        return Atom_get__orbitals(self)
-    
-    @_orbitals.setter
-    def _orbitals(self, _orbitals):
-        Atom_set__orbitals(self, _orbitals)
 
 # endregion
 # region Atom functions
@@ -100,6 +100,14 @@ def Atom_set_electrons(atom, electrons):
     atom.electrons = electrons
 
 @njit
+def Atom_get_ref_orbitals(atom):
+    return atom.ref_orbitals
+
+@njit
+def Atom_set_ref_orbitals(atom, ref_orbitals):
+    atom.ref_orbitals = ref_orbitals
+
+@njit
 def Atom_get_orbitals(atom):
     return atom.orbitals
 
@@ -107,20 +115,12 @@ def Atom_get_orbitals(atom):
 def Atom_set_orbitals(atom, orbitals):
     atom.orbitals = orbitals
 
-@njit
-def Atom_get__orbitals(atom):
-    return atom._orbitals
-
-@njit
-def Atom_set__orbitals(atom, _orbitals):
-    atom._orbitals = _orbitals
-
 # endregion
 # endregion
 
 structref.define_proxy(Atom, AtomType, [
     "protons", "neutrons", "electrons",
-    "orbitals", "_orbitals",
+    "ref_orbitals", "orbitals",
     "ionic_bonds", "covalent_bonds",
     "position", "velocity",
     "data", "index", "initialized",
@@ -135,8 +135,8 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None):
     protons = typed.List.empty_list(particle_type)
     neutrons = typed.List.empty_list(particle_type)
     electrons = typed.List.empty_list(particle_type)
-    orbitals = typed.Dict.empty(orbital_key_type, types.int64)
-    _orbitals = typed.List.empty_list(orbital_type)
+    ref_orbitals = typed.Dict.empty(orbital_key_type, types.int64)
+    orbitals = typed.List.empty_list(orbital_type)
     ionic_bonds = typed.List.empty_list(awi_pwi)
     covalent_bonds = typed.List.empty_list(awi_pwi_pwi)
     index = -1
@@ -145,7 +145,7 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None):
     n_electrons = n_electrons
     a = Atom(
         protons, neutrons, electrons,
-        orbitals, _orbitals,
+        ref_orbitals, orbitals,
         ionic_bonds, covalent_bonds,
         position, velocity, data, index, initialized, n_electrons
     )
