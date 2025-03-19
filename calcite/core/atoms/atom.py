@@ -132,8 +132,8 @@ structref.define_proxy(Atom, AtomType, [
 # region Atom creation functions
 @njit
 def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None):
-    protons = typed.List.empty_list(particle_type)
-    neutrons = typed.List.empty_list(particle_type)
+    protons = typed.List([proton() for _ in range(n_protons)])
+    neutrons = typed.List([neutron() for _ in range(n_neutrons)])
     electrons = typed.List.empty_list(particle_type)
     ref_orbitals = typed.Dict.empty(orbital_key_type, types.int64)
     orbitals = typed.List.empty_list(orbital_type)
@@ -149,6 +149,8 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None):
         ionic_bonds, covalent_bonds,
         position, velocity, data, index, initialized, n_electrons
     )
-    #a.init()
+    
+    
+
     return a
 # endregion
