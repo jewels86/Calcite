@@ -143,3 +143,11 @@ orbital_type = OrbitalType([
     ('debug_mode', types.boolean)
 ])
 # endregion
+
+# region Orbital creation functions
+@njit
+def orbital(n, l, m, electrons=None, debug_mode=False):
+    if electrons is None:
+        electrons = typed.List.empty_list(Particle)
+    return Orbital(n, l, m, electrons, debug_mode)
+# endregion

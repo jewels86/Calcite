@@ -180,7 +180,7 @@ particle_type = ParticleType(fields=[
 # endregion
 # region Particle creation methods
 @njit
-def electron(n, l, m, position=None, velocity=None) -> Particle:
+def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
     """
     Creates a new electron with the given quantum numbers.
 
@@ -188,6 +188,7 @@ def electron(n, l, m, position=None, velocity=None) -> Particle:
         n (int): The principal quantum number.
         l (int): The azimuthal quantum number.
         m (int): The magnetic quantum number.
+        spin (float, optional): The spin of the electron. Defaults to None.
         position (list[float] | None, optional): The position of the electron. Defaults to None.
         velocity (list[float], optional): The velocity of the electron. Defaults to None.
 
@@ -205,7 +206,7 @@ def electron(n, l, m, position=None, velocity=None) -> Particle:
     return Particle(
         constants.ELECTRON_MASS, 
         constants.ELECTRON_CHARGE, 
-        constants.ELECTRON_SPIN, 
+        constants.ELECTRON_SPIN if spin is None else spin, 
         position, 
         velocity, 
         data, -1
@@ -228,9 +229,6 @@ def particle(mass, charge, spin, position=None, velocity=None) -> Particle:
         Particle: A new particle object
     """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
-    position = position if position is not None else None
-    velocity = velocity if velocity is not None else None
-
     return Particle(mass, charge, spin, position, velocity, data, -1)
 
 # endregion

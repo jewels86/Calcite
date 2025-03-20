@@ -44,8 +44,8 @@ class Particle:
     def relativistic_mass(self) -> float: ...
     """Returns the relativistic mass of the particle."""
 
-def electron(n: int, l: int, m: int, position: list[float] | None = None, 
-             velocity: list[float] = None) -> Particle: ...
+def electron(n: int, l: int, m: int, spin: float = None,
+            position: list[float] | None = None, velocity: list[float] = None) -> Particle: ...
 """
 Creates a new electron with the given quantum numbers.
 
@@ -53,6 +53,7 @@ Args:
     n (int): The principal quantum number.
     l (int): The azimuthal quantum number.
     m (int): The magnetic quantum number.
+    spin (float, optional): The spin of the electron. Defaults to None.
     position (list[float] | None, optional): The position of the electron. Defaults to None.
     velocity (list[float], optional): The velocity of the electron. Defaults to None.
 

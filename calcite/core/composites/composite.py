@@ -132,8 +132,6 @@ composite_particle_type = CompositeParticleType([
 def proton(position=None, velocity=None):
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data['type'] = 'proton'
-    position = position if position is not None else vector()
-    velocity = velocity if velocity is not None else vector()
     return CompositeParticle(
         typed.List([up_quark(), up_quark(), down_quark()]),
         position,
@@ -145,8 +143,6 @@ def proton(position=None, velocity=None):
 def neutron(position=None, velocity=None):
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data['type'] = 'neutron'
-    position = position if position is not None else vector()
-    velocity = velocity if velocity is not None else vector()
     return CompositeParticle(
         typed.List([up_quark(), down_quark(), down_quark()]),
         position,

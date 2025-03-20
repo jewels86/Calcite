@@ -37,3 +37,20 @@ class Orbital:
     """Adds an electron to the orbital."""
 
 orbital_type = OrbitalType
+
+def orbital(n: int, l: int, m: int, electrons: List[Particle], 
+            debug_mode: bool = False) -> Orbital:
+    """
+    Creates an atomic orbital.
+
+    Args:
+    - n (int): the principal quantum number
+    - l (int): the azimuthal quantum number
+    - m (int): the magnetic quantum number
+    - electrons (List[Particle]): the electrons in the orbital
+    - debug_mode (bool): flag for debug mode
+
+    Returns:
+    - Orbital: the created atomic orbital
+    """
+    pass
