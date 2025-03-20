@@ -302,6 +302,10 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
     index = -1
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     n_electrons = n_electrons
+    if _debug is None:
+        def func(location, severity, content):
+            print(f"[{location} - {severity}]: {content}")
+        _debug = func
     a = Atom(
         protons, neutrons, electrons,
         ref_orbitals, orbitals,
