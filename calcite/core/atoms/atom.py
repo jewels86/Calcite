@@ -276,6 +276,62 @@ def Atom_set_debug_function(atom, _debug):
     atom._debug = _debug
 
 # endregion
+# region Methods
+@overload_method(AtomType, "configure")
+def Atom_configure(self):
+    def impl(self):
+        return configure(self)
+    return impl
+
+@overload_method(AtomType, "add")
+def Atom_add(self, electron):
+    def impl(self, electron):
+        return add(self, electron)
+    return impl
+
+@overload_method(AtomType, "remove")
+def Atom_remove(self):
+    def impl(self):
+        return remove(self)
+    return impl
+
+@overload_method(AtomType, "remove_specific")
+def Atom_remove_specific(self, electron):
+    def impl(self, electron):
+        return remove_specific(self, electron)
+    return impl
+
+@overload_method(AtomType, "valence_electrons")
+def Atom_valence_electrons(self):
+    def impl(self):
+        return valence_electrons(self)
+    return impl
+
+@overload_method(AtomType, "stable")
+def Atom_stable(self):
+    def impl(self):
+        return stable(self)
+    return impl
+
+@overload_method(AtomType, "add_to_valence_shell")
+def Atom_add_to_valence_shell(self, electron):
+    def impl(self, electron):
+        return add_to_valence_shell(self, electron)
+    return impl
+
+@overload_method(AtomType, "remove_from_valence_shell")
+def Atom_remove_from_valence_shell(self):
+    def impl(self):
+        return remove_from_valence_shell(self)
+    return impl
+
+@overload_method(AtomType, "covalent_bond")
+def Atom_covalent_bond(self, other):
+    def impl(self, other):
+        return covalent_bond(self, other)
+    return impl
+
+# endregion
 # endregion
 
 structref.define_proxy(Atom, AtomType, [
