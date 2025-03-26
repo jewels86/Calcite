@@ -1,7 +1,6 @@
 from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
-from calcite.formulas import magnitude
 from calcite.core.particles.particle import Particle
 import numpy as np
 

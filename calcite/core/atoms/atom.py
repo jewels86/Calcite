@@ -6,6 +6,7 @@ from calcite.core.particles.particle import Particle, particle_type, electron
 from calcite.core.composites.composite import proton, neutron
 from calcite.core.atoms.orbital import orbital, orbital_type
 from calcite.core.atoms.atom_functions import *
+from calcite.core.vectors.vector import vector
 import numpy as np
 
 # region AtomType and Atom
@@ -21,15 +22,18 @@ awi_pwi_pwi = types.Tuple((types.int64, types.int64, types.int64))
 
 class Atom(structref.StructRefProxy):
     def __new__(cls, protons, neutrons, electrons, ref_orbitals, orbitals, ionic_bonds, 
-                covalent_bonds, position, velocity, data, index, debug_mode, n_electrons, _debug):
-
+                covalent_bonds, position, velocity, data, index, debug_mode, n_electrons, log):
+        if isinstance(position, (list, np.ndarray)):
+            position = vector(position)
+        if isinstance(velocity, (list, np.ndarray)):
+            velocity = vector(velocity)
         return structref.StructRefProxy.__new__(
             cls,
             protons, neutrons, electrons,
             ref_orbitals, orbitals,
             ionic_bonds, covalent_bonds,
             position, velocity, data, index,
-            debug_mode, n_electrons, _debug
+            debug_mode, n_electrons, log
         )
     
     @property
@@ -122,11 +126,19 @@ class Atom(structref.StructRefProxy):
 
     @property
     def _debug(self):
-        return Atom_get_debug_mode(self)
+        return Atom_get_log(self)
     
     @_debug.setter
-    def _debug(self, debug_mode):
-        Atom_set_debug_mode(self, debug_mode)
+    def _debug(self, log):
+        Atom_set_log(self, log)
+
+    @property
+    def log(self):
+        return Atom_get_log(self)
+    
+    @log.setter
+    def log(self, log):
+        Atom_set_log(self, log)
 
     @property
     def debug_mode(self):
@@ -143,22 +155,6 @@ class Atom(structref.StructRefProxy):
     @n_electrons.setter
     def n_electrons(self, n_electrons):
         Atom_set_n_electrons(self, n_electrons)
-
-    @property
-    def _debug(self):
-        return Atom_get_debug_function(self)
-    
-    @_debug.setter
-    def _debug(self, _debug):
-        Atom_set_debug_function(self, _debug)
-
-    @property
-    def debug_function(self):
-        return Atom_get_debug_function(self)
-    
-    @debug_function.setter
-    def debug_function(self, _debug):
-        Atom_set_debug_function(self, _debug)
 
 # endregion
 # region Atom functions
@@ -268,12 +264,12 @@ def Atom_set_n_electrons(atom, n_electrons):
     atom.n_electrons = n_electrons
 
 @njit
-def Atom_get_debug_function(atom):
+def Atom_get_log(atom):
     return atom._debug
 
 @njit
-def Atom_set_debug_function(atom, _debug):
-    atom._debug = _debug
+def Atom_set_log(atom, log):
+    atom._debug = log
 
 # endregion
 # region Methods
@@ -331,6 +327,24 @@ def Atom_covalent_bond(self, other):
         return covalent_bond(self, other)
     return impl
 
+@overload_method(AtomType, "ionic_bond")
+def Atom_ionic_bond(self, other):
+    def impl(self, other):
+        return ionic_bond(self, other)
+    return impl
+
+@overload_method(AtomType, "kinetic_energy")
+def Atom_kinetic_energy(self):
+    def impl(self):
+        return 0.5 * self.mass * self.velocity.magnitude() ** 2
+    return impl
+
+@overload_method(AtomType, "momentum")
+def Atom_momentum(self):
+    def impl(self):
+        return self.mass * self.velocity
+    return impl
+
 # endregion
 # endregion
 
@@ -340,14 +354,14 @@ structref.define_proxy(Atom, AtomType, [
     "ionic_bonds", "covalent_bonds",
     "position", "velocity",
     "data", "index", "debug_mode",
-    "n_electrons", "_debug"
+    "n_electrons", "log"
 ])
 
 #  endregion
 
 # region Atom creation functions
 @njit
-def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug_mode=False, _debug=None):
+def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug_mode=False, log=None):
     protons = typed.List([proton() for _ in range(n_protons)])
     neutrons = typed.List([neutron() for _ in range(n_neutrons)])
     electrons = typed.List.empty_list(particle_type)
@@ -358,15 +372,15 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
     index = -1
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     n_electrons = n_electrons
-    if _debug is None:
+    if log is None:
         def func(location, severity, content):
             print(f"[{location} - {severity}]: {content}")
-        _debug = func
+        log = func
     a = Atom(
         protons, neutrons, electrons,
         ref_orbitals, orbitals,
         ionic_bonds, covalent_bonds,
-        position, velocity, data, index, debug_mode, n_electrons, _debug
+        position, velocity, data, index, debug_mode, n_electrons, log
     )
     
     added = 0

@@ -1,7 +1,6 @@
 from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
-from calcite.formulas import magnitude
 from calcite.core.vectors.vector import vector_type, vector
 from calcite import constants
 import numpy as np
@@ -144,13 +143,13 @@ def Particle_momentum(self):
 @overload_method(ParticleType, 'kinetic_energy')
 def Particle_kinetic_energy(self):
     def impl(self):
-        return 0.5 * self.mass * magnitude(self.velocity) ** 2
+        return 0.5 * self.mass * vector.magnitude(self.velocity) ** 2
     return impl
 
 @overload_method(ParticleType, 'relativistic_mass')
 def Particle_relativistic_mass(self):
     def impl(self):
-        return self.mass / (1 - magnitude(self.velocity) ** 2 / constants.C ** 2) ** 0.5
+        return self.mass / (1 - vector.magnitude(self.velocity) ** 2 / constants.C ** 2) ** 0.5
     return impl
 
 @overload_method(ParticleType, 'energy')
@@ -200,8 +199,10 @@ def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
     data["n"] = str(n)
     data["l"] = str(l)
     data["m"] = str(m)
-    position = position if position is not None else None
-    velocity = velocity if velocity is not None else None
+    if position is not vector_type and position is not None:
+        position = vector(position)
+    if velocity is not vector_type and velocity is not None:
+        velocity = vector(velocity)
 
     return Particle(
         constants.ELECTRON_MASS, 

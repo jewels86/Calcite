@@ -10,7 +10,7 @@ def configure(self):
     max_n = int(np.ceil((self.n_electrons / 2)**(1/3)))
     order = orbital_order(self.n_electrons, max_n)
     if self.debug_mode:
-        self._debug("Atom: configure()", 0, f"Configuring atom with {self.n_electrons} electrons and max_n {max_n}.")
+        self.log("Atom: configure()", 0, f"Configuring atom with {self.n_electrons} electrons and max_n {max_n}.")
 
     for orbital in self.orbitals:
         orbital.electrons.clear()
@@ -158,3 +158,22 @@ def covalent_bond(self, other):
     other.covalent_bonds.append((self.index, unpaired_other[0].index, unpaired_self[0].index))
 
     return True
+
+@njit
+def ionic_bond(self, other):
+    if self.stable or other.stable:
+        return False
+    
+    unpaired_self = [e for e in self.valence_electrons if e.spin == 0.5]
+    unpaired_other = [e for e in other.valence_electrons if e.spin == 0.5]
+
+    if len(unpaired_self) > 0 and len(unpaired_other) > 0:
+        e_to_transfer = unpaired_self[0]
+        self.electrons.remove(e_to_transfer)
+        other.electrons.append(e_to_transfer)
+        e_to_transfer.spin = -0.5
+        self.ionic_bonds.append((other.index, e_to_transfer))
+        other.ionic_bonds.append((self.index, e_to_transfer))
+
+        return True
+    return False
