@@ -4,7 +4,7 @@ from calcite.formulas import orbital_order
 from calcite.core.particles.particle import particle_type
 from calcite.core.atoms.orbital import orbital
 
-@njit
+@njit(cache=True)
 def configure(self):
     added = 0
     max_n = int(np.ceil((self.n_electrons / 2)**(1/3)))
@@ -12,14 +12,14 @@ def configure(self):
     if self.debug_mode:
         self.log("Atom: configure()", 0, f"Configuring atom with {self.n_electrons} electrons and max_n {max_n}.")
 
-    for orbital in self.orbitals:
-        orbital.electrons.clear()
+    for o in self.orbitals:
+        o.electrons.clear()
     
     for n, l in order:
         for m in range(-l, l+1):
             if (n, l, m) not in self.ref_orbitals:
                 self.ref_orbitals[(n, l, m)] = len(self.orbitals)
-                self.orbitals.append(orbital(n, l, m))
+                self.orbitals.append(orbital(n, l, m, debug_mode=self.debug_mode))
             o = self.orbitals[self.ref_orbitals[(n, l, m)]]
             for _ in range(2):
                 if added < self.n_electrons:
@@ -29,15 +29,12 @@ def configure(self):
                     else: break
                 else: break
     
-    to_stay = [orbital for orbital in self._orbitals if len(orbital.electrons) != 0]
-    to_remove = [orbital for orbital in self._orbitals if len(orbital.electrons) == 0]
-    for orbital in to_remove: self.orbitals.pop((orbital.n, orbital.l, orbital.m), None)
-    self._orbitals = typed.List(to_stay)
+    self.orbitals = [o for o in self.orbitals if len(o.electrons) > 0]
 
 @njit
 def add(self, electron):
-    for orbital in self.orbitals:
-        if orbital.can_add(electron):
+    for o in self.orbitals:
+        if o.can_add(electron):
             self.electrons.append(electron)
             self.configure()
             return True
@@ -75,9 +72,9 @@ def valence_electrons(self):
     valence_electrons = []
     max_n = max([o.n for o in self._orbitals])
 
-    for orbital in self._orbitals:
-        if orbital.n == max_n:
-            valence_electrons.extend(orbital.electrons)
+    for o in self._orbitals:
+        if o.n == max_n:
+            valence_electrons.extend(o.electrons)
 
     return valence_electrons
 
@@ -96,9 +93,9 @@ def stable(self):
 @njit
 def add_to_valence_shell(self, electron):
     valence_shell = max([o.n for o in self._orbitals])
-    for orbital in self._orbitals:
-        if orbital.n == valence_shell and orbital.can_add(electron):
-            orbital.add(electron)
+    for o in self._orbitals:
+        if o.n == valence_shell and o.can_add(electron):
+            o.add(electron)
             self.electrons.append(electron)
             return True
     
@@ -118,9 +115,9 @@ def add_to_valence_shell(self, electron):
 @njit
 def remove_from_valence_shell(self):
     valence_shell = max([o.n for o in self._orbitals])
-    for orbital in self._orbitals:
-        if orbital.n == valence_shell and len(orbital.electrons) > 0:
-            orbital.remove()
+    for o in self._orbitals:
+        if o.n == valence_shell and len(o.electrons) > 0:
+            o.remove()
             self.electrons.pop()
             return True
     return False

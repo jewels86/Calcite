@@ -376,11 +376,13 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
         def func(location, severity, content):
             print(f"[{location} - {severity}]: {content}")
         log = func
+    if debug_mode: log("atom", 0, f"Creating atom with {n_protons} protons, {n_neutrons} neutrons, and {n_electrons} electrons.")
     a = Atom(
         protons, neutrons, electrons,
         ref_orbitals, orbitals,
         ionic_bonds, covalent_bonds,
-        position, velocity, data, index, debug_mode, n_electrons, log
+        position, velocity, data, 
+        index, debug_mode, n_electrons, log
     )
     
     added = 0
