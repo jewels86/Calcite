@@ -377,13 +377,6 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
             print(f"[{location} - {severity}]: {content}")
         log = func
     if debug_mode: log("atom", 0, f"Creating atom with {n_protons} protons, {n_neutrons} neutrons, and {n_electrons} electrons.")
-    a = Atom(
-        protons, neutrons, electrons,
-        ref_orbitals, orbitals,
-        ionic_bonds, covalent_bonds,
-        position, velocity, data, 
-        index, debug_mode, n_electrons, log
-    )
     
     added = 0
     order = orbital_order(n_electrons)
@@ -395,6 +388,14 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
             electrons = []
             new_electron = electron(n, l, m, 0.5 if added % 2 == 0 else -0.5)
             electrons.append(new_electron)
+
+    a = Atom(
+        protons, neutrons, electrons,
+        ref_orbitals, orbitals,
+        ionic_bonds, covalent_bonds,
+        position, velocity, data, 
+        index, debug_mode, n_electrons, log
+    )
     
     a.configure()
 
