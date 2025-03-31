@@ -1,7 +1,7 @@
 from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
-from calcite.core.particles.particle import Particle
+from calcite.core.particles.particle import particle_type
 import numpy as np
 
 # region OrbitalType and Orbital
@@ -138,7 +138,7 @@ orbital_type = OrbitalType([
     ('n', types.int64),
     ('l', types.int64),
     ('m', types.int64),
-    ('electrons', types.ListType(Particle)),
+    ('electrons', types.ListType(particle_type)),
     ('debug_mode', types.boolean)
 ])
 # endregion
@@ -147,6 +147,6 @@ orbital_type = OrbitalType([
 @njit
 def orbital(n, l, m, electrons=None, debug_mode=False):
     if electrons is None:
-        electrons = typed.List.empty_list(Particle)
+        electrons = typed.List.empty_list(particle_type)
     return Orbital(n, l, m, electrons, debug_mode)
 # endregion
