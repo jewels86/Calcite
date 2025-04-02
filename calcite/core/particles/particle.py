@@ -171,8 +171,8 @@ particle_type = ParticleType(fields=[
     ('mass', types.float64),
     ('charge', types.float64),
     ('spin', types.float64),
-    ('position', vector_type),
-    ('velocity', vector_type),
+    ('position', types.Optional(vector_type)),
+    ('velocity', types.Optional(vector_type)),
     ('data', types.DictType(types.unicode_type, types.unicode_type)),
     ('index', types.int64)
 ])
@@ -199,10 +199,22 @@ def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
     data["n"] = str(n)
     data["l"] = str(l)
     data["m"] = str(m)
-    if position is not vector_type and position is not None:
-        position = vector(position)
-    if velocity is not vector_type and velocity is not None:
-        velocity = vector(velocity)
+    
+    if position is not None:
+        if position is vector_type:
+            pass
+        else:
+            position = vector(*position)
+    else:
+        position = None
+    
+    if velocity is not None:
+        if velocity is vector_type:
+            pass
+        else:
+            velocity = vector(*velocity)
+    else:
+        velocity = None
 
     return Particle(
         constants.ELECTRON_MASS, 

@@ -385,7 +385,6 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
         for m in range(-l, l+1):
             if added == n_electrons:
                 break
-            electrons = []
             new_electron = electron(n, l, m, 0.5 if added % 2 == 0 else -0.5)
             electrons.append(new_electron)
 
