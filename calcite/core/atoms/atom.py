@@ -133,14 +133,6 @@ class Atom(structref.StructRefProxy):
         Atom_set_log(self, log)
 
     @property
-    def log(self):
-        return Atom_get_log(self)
-    
-    @log.setter
-    def log(self, log):
-        Atom_set_log(self, log)
-
-    @property
     def debug_mode(self):
         return Atom_get_debug_mode(self)
     
@@ -354,7 +346,7 @@ structref.define_proxy(Atom, AtomType, [
     "ionic_bonds", "covalent_bonds",
     "position", "velocity",
     "data", "index", "debug_mode",
-    "n_electrons", "log"
+    "n_electrons"
 ])
 
 #  endregion
@@ -372,28 +364,31 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
     index = -1
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     n_electrons = n_electrons
-    if log is None:
-        def func(location, severity, content):
-            print(f"[{location} - {severity}]: {content}")
-        log = func
-    if debug_mode: log("atom", 0, f"Creating atom with {n_protons} protons, {n_neutrons} neutrons, and {n_electrons} electrons.")
+    if debug_mode: print(f"Creating atom with {n_protons} protons, {n_neutrons} neutrons, and {n_electrons} electrons.")
     
+    position = vector(*position) if position is not None else vector(np.nan, np.nan, np.nan)
+    velocity = vector(*velocity) if velocity is not None else vector(np.nan, np.nan, np.nan)
+
     added = 0
-    order = orbital_order(n_electrons)
+    order = orbital_order(n_electrons, max_n=n_electrons/2)
 
     for n, l in order:
-        for m in range(-l, l+1):
-            if added == n_electrons:
+        for m in range(-l, l + 1):
+            if added >= n_electrons:
                 break
-            new_electron = electron(n, l, m, 0.5 if added % 2 == 0 else -0.5)
+            spin = 0.5 if added % 2 == 0 else -0.5
+            new_electron = electron(n, l, m, spin)
+            if debug_mode: 
+                print(f"Atom creation - Creating electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
             electrons.append(new_electron)
-
+            added += 1
+            
     a = Atom(
         protons, neutrons, electrons,
         ref_orbitals, orbitals,
         ionic_bonds, covalent_bonds,
         position, velocity, data, 
-        index, debug_mode, n_electrons, log
+        index, debug_mode, n_electrons
     )
     
     a.configure()

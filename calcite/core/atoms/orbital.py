@@ -122,13 +122,13 @@ def add(self, electron):
     return False
 
 @overload_method(OrbitalType, 'add')
-def Orbital_add(self):
+def Orbital_add(self, electron):
     def impl(self, electron):
         return add(self, electron)
     return impl
 
 @overload_method(OrbitalType, 'can_add')
-def Orbital_can_add(self):
+def Orbital_can_add(self, electron):
     def impl(self, electron):
         return can_add(self, electron)
     return impl

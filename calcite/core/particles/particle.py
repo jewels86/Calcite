@@ -171,8 +171,8 @@ particle_type = ParticleType(fields=[
     ('mass', types.float64),
     ('charge', types.float64),
     ('spin', types.float64),
-    ('position', types.Optional(vector_type)),
-    ('velocity', types.Optional(vector_type)),
+    ('position', vector_type),
+    ('velocity', vector_type),
     ('data', types.DictType(types.unicode_type, types.unicode_type)),
     ('index', types.int64)
 ])
@@ -206,7 +206,7 @@ def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
         else:
             position = vector(*position)
     else:
-        position = None
+        position = vector(np.nan, np.nan, np.nan)
     
     if velocity is not None:
         if velocity is vector_type:
@@ -214,7 +214,7 @@ def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
         else:
             velocity = vector(*velocity)
     else:
-        velocity = None
+        velocity = vector(np.nan, np.nan, np.nan)
 
     return Particle(
         constants.ELECTRON_MASS, 
@@ -242,6 +242,23 @@ def particle(mass, charge, spin, position=None, velocity=None) -> Particle:
         Particle: A new particle object
     """
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
+    
+    if position is not None:
+        if position is vector_type:
+            pass
+        else:
+            position = vector(*position)
+    else:
+        position = vector(np.nan, np.nan, np.nan)
+    
+    if velocity is not None:
+        if velocity is vector_type:
+            pass
+        else:
+            velocity = vector(*velocity)
+    else:
+        velocity = vector(np.nan, np.nan, np.nan)
+
     return Particle(mass, charge, spin, position, velocity, data, -1)
 
 # endregion
