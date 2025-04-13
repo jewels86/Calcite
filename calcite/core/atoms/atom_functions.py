@@ -7,31 +7,18 @@ from calcite.core.atoms.orbital import orbital
 @njit(cache=True)
 def configure(self):
     added = 0
-    order = orbital_order(self.n_electrons)
-    if self.debug_mode:
-        print(f"Atom.configure - Configuring atom with {self.n_electrons} electrons")
-
-    for o in self.orbitals:
-        o.electrons.clear()
     
-    for n, l in order:
-        for m in range(-l, l+1):
-            if (n, l, m) not in self.ref_orbitals:
-                self.ref_orbitals[(n, l, m)] = len(self.orbitals)
-                self.orbitals.append(orbital(n, l, m, debug_mode=self.debug_mode))
-                if self.debug_mode: print(f"Atom.configure - Adding new orbital ({n}, {l}, {m}) to atom.")
-            o = self.orbitals[self.ref_orbitals[(n, l, m)]]
-            for _ in range(2):
-                if added < self.n_electrons:
-                    e = self.electrons[added]
-                    if o.add(e):
-                        if self.debug_mode:
-                            print(f"Atom.configure - Adding electron with spin ({'up' if e.spin == 0.5 else 'down'}) to orbital ({n}, {l}, {m}) ({added + 1} of {self.n_electrons})")
-                        added += 1
-                    else: break
-                else: break
+    for e in self.electrons:
+        n = 
+        l = int(e.data["l"])
+        m = int(e.data["m"])
+        if (n, l, m) not in self.orbitals:
+            self.ref_orbitals[(n, l, m)] = len(self._orbitals)
+            self.orbitals[len(self.ref_orbitals)] = orbital(n, l, m)
+        o = self.orbitals[(n, l, m)]
+        o.add(e)
     
-    self.orbitals = typed.List([o for o in self.orbitals if len(o.electrons) > 0])
+    
 
 @njit
 def add(self, electron):
