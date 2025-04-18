@@ -9,9 +9,9 @@ def configure(self):
     added = 0
     
     for e in self.electrons:
-        n = 
-        l = int(e.data["l"])
-        m = int(e.data["m"])
+        n = float(e.data["n"])
+        l = float(e.data["l"])
+        m = float(e.data["m"])
         if (n, l, m) not in self.orbitals:
             self.ref_orbitals[(n, l, m)] = len(self._orbitals)
             self.orbitals[len(self.ref_orbitals)] = orbital(n, l, m)

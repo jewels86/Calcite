@@ -177,6 +177,62 @@ particle_type = ParticleType(fields=[
     ('index', types.int64)
 ])
 # endregion
+# region ElectronType and Electron
+class ElectronType(ParticleType):
+    pass
+
+class Electron(Particle):
+    def __new__(self, mass, charge, spin, position, velocity, data, index, n, l, m):
+        instance = structref.StructRefProxy.__new__(self, mass, charge, spin, position, velocity, data, index, n, l, m)
+        return instance
+    
+    @property
+    def n(self):
+        return Electron_get_n(self)
+
+    @n.setter
+    def n(self, n):
+        Electron_set_n(self, n)
+
+    @property
+    def l(self):
+        return Electron_get_l(self)
+
+    @l.setter
+    def l(self, l):
+        Electron_set_l(self, l)
+
+    @property
+    def m(self):
+        return Electron_get_m(self)
+
+    @m.setter
+    def m(self, m):
+        Electron_set_m(self, m)
+
+@njit
+def Electron_get_n(self):
+    return self.n
+
+@njit
+def Electron_get_l(self):
+    return self.l
+
+@njit
+def Electron_get_m(self):
+    return self.m
+
+@njit
+def Electron_set_n(self, n):
+    self.n = n
+
+@njit
+def Electron_set_l(self, l):
+    self.l = l
+
+@njit
+def Electron_set_m(self, m):
+    self.m = m
 # region Particle creation methods
 @njit
 def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
