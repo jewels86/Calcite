@@ -1,19 +1,7 @@
 import numpy as np
 from numba import njit
-from calcite.core.particle import Particle
 
 @njit
-def magnitude(vector: np.ndarray) -> float:
-    return np.sqrt(np.sum(vector[:1]**2))
-@njit
-def unit_vector(vector: np.ndarray) -> np.ndarray:
-    return vector / magnitude(vector)
-
-@njit
-def energy(particle: Particle) -> float:
-    p = magnitude(particle.momentum)
-    return np.sqrt(p**2 + particle.mass**2)
-
-@njit
-def orbital_order(n: int) -> list[tuple[int, int]]:
-    return [(n, l) for n in range(1, n) for l in range(n)]
+def orbital_order(n_electrons: int, max_n=-1) -> list[tuple[int, int]]:
+    max_n = int(np.ceil((n_electrons / 2)**(1/3))) if max_n == -1 else max_n
+    return [(n, l) for n in range(1, max_n+1) for l in range(n)]
