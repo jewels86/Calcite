@@ -69,9 +69,9 @@ def remove_specific(self, electron):
 @njit
 def valence_electrons(self):
     valence_electrons = []
-    max_n = max([o.n for o in self._orbitals])
+    max_n = max([o.n for o in self.orbitals])
 
-    for o in self._orbitals:
+    for o in self.orbitals:
         if o.n == max_n:
             valence_electrons.extend(o.electrons)
 
@@ -80,8 +80,8 @@ def valence_electrons(self):
 @njit
 def stable(self):
     valence_electrons = 0
-    max_valence = 8 if self.atomic_number < 18 else 18
-    max_n = max([o.n for o in self._orbitals])
+    max_valence = 8 if self.n_electrons < 18 else 18
+    max_n = max([o.n for o in self.orbitals])
 
     for o in self.orbitals:
         if o.n == max_n:
@@ -91,8 +91,8 @@ def stable(self):
 
 @njit
 def add_to_valence_shell(self, electron):
-    valence_shell = max([o.n for o in self._orbitals])
-    for o in self._orbitals:
+    valence_shell = max([o.n for o in self.orbitals])
+    for o in self.orbitals:
         if o.n == valence_shell and o.can_add(electron):
             o.add(electron)
             self.electrons.append(electron)
@@ -100,10 +100,10 @@ def add_to_valence_shell(self, electron):
     
     for l in range(valence_shell):
         for m in range(-l, l + 1):
-            if (valence_shell, l, m) not in self.orbitals:
-                self.orbitals[(valence_shell, l, m)] = len(self._orbitals)
+            if (valence_shell, l, m) not in self.ref_orbitals:
+                self.ref_orbitals[(valence_shell, l, m)] = len(self.orbitals)
                 new_orbital = orbital(valence_shell, l, m, typed.List.empty_list(particle_type))
-                self._orbitals.append(new_orbital)
+                self.orbitals.append(new_orbital)
                 if new_orbital.can_add(electron):
                     new_orbital.add(electron)
                     self.electrons.append(electron)
@@ -113,8 +113,8 @@ def add_to_valence_shell(self, electron):
 
 @njit
 def remove_from_valence_shell(self):
-    valence_shell = max([o.n for o in self._orbitals])
-    for o in self._orbitals:
+    valence_shell = max([o.n for o in self.orbitals])
+    for o in self.orbitals:
         if o.n == valence_shell and len(o.electrons) > 0:
             o.remove()
             self.electrons.pop()
@@ -123,35 +123,26 @@ def remove_from_valence_shell(self):
 
 @njit
 def covalent_bond(self, other):
-    if self.stable or other.stable:
+    if self.stable() or other.stable():
         return False
-    
-    valence_self = self.valence_electrons
-    valence_other = other.valence_electrons
 
-    unpaired_self = [e for e in valence_self if e.spin == 0.5]
-    unpaired_other = [e for e in valence_other if e.spin == 0.5]
+    valence_self = self.valence_electrons()
+    valence_other = other.valence_electrons()
+
+    unpaired_self = [e for e in valence_self]
+    unpaired_other = [e for e in valence_other]
 
     if len(unpaired_self) == 0 or len(unpaired_other) == 0:
         return False
 
-    original_self_spin = unpaired_self[0].spin
-    original_other_spin = unpaired_other[0].spin
-    unpaired_self[0].spin = -0.5
-    unpaired_other[0].spin = 0.5
+    electron_self = unpaired_self[0]
+    electron_other = unpaired_other[0]
 
-    if not self.add_to_valence_shell(unpaired_other[0]) or \
-        not other.add_to_valence_shell(unpaired_self[0]):
-        unpaired_self[0].spin = 0.5
-        unpaired_other[0].spin = -0.5
-        if not self.add_to_valence_shell(unpaired_other[0]) or \
-            not other.add_to_valence_shell(unpaired_self[0]):
-            unpaired_self[0].spin = original_self_spin
-            unpaired_other[0].spin = original_other_spin
-            return False
-    
-    self.covalent_bonds.append((other.index, unpaired_self[0].index, unpaired_other[0].index))
-    other.covalent_bonds.append((self.index, unpaired_other[0].index, unpaired_self[0].index))
+    if not self.add_to_valence_shell(electron_other) or not other.add_to_valence_shell(electron_self):
+        return False
+
+    self.covalent_bonds.append((other.index, electron_self.index, electron_other.index))
+    other.covalent_bonds.append((self.index, electron_other.index, electron_self.index))
 
     return True
 
