@@ -134,6 +134,17 @@ def Orbital_can_add(self, electron):
     def impl(self, electron):
         return can_add(self, electron)
     return impl
+
+@overload_method(OrbitalType, 'open_spin') 
+def Orbital_open_spin(self):
+    def impl(self):
+        if len(self.electrons) == 0:
+            return 0.5
+        elif len(self.electrons) == 1:
+            return 0 - self.electrons[0].spin
+        else:
+            return -1.0
+    return impl
 # endregion
 structref.define_proxy(Orbital, OrbitalType, ['n', 'l', 'm', 'electrons', 'debug_mode'])
 orbital_type = OrbitalType([

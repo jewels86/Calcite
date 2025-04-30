@@ -36,6 +36,15 @@ class Orbital:
     def add(self, electron: Particle) -> bool: ...
     """Adds an electron to the orbital."""
 
+    def open_spin(self) -> float:
+        """
+        Returns the open spin of the orbital.
+
+        Returns:
+        - float: the open spin of the orbital
+        """
+        pass
+
 orbital_type = OrbitalType
 
 def orbital(n: int, l: int, m: int, electrons: List[Particle], 

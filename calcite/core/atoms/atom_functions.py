@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit, typed, types
 from calcite.formulas import orbital_order
-from calcite.core.particles.particle import particle_type
+from calcite.core.particles.particle import particle_type, electron
 from calcite.core.atoms.orbital import orbital, orbital_type
 
 
@@ -21,11 +21,12 @@ def configure(self):
             self.orbitals.append(o)
             self.ref_orbitals[(n, l, m)] = len(self.orbitals) - 1
             for _ in range(2):
-                    if added < len(self.electrons):
-                        electron = self.electrons[added]
-                        if o.add(electron):
+                    if added < self.n_electrons:
+                        e = electron(n, l, m, o.open_spin())
+                        if o.add(e):
+                            self.electrons.append(e)
                             if self.debug_mode: 
-                                print(f"Assigned electron with spin {'up' if electron.spin == 0.5 else 'down'} to orbital {n}, {l}, {m}")
+                                print(f"Assigned electron with spin {'up' if e.spin == 0.5 else 'down'} to orbital {n}, {l}, {m}")
                             added += 1
                     else:
                         break
@@ -93,22 +94,28 @@ def stable(self):
 def add_to_valence_shell(self, electron):
     valence_shell = max([o.n for o in self.orbitals])
     for o in self.orbitals:
-        if o.n == valence_shell and o.can_add(electron):
-            o.add(electron)
-            self.electrons.append(electron)
-            return True
+        if o.n == valence_shell and o.open_spin() != -1.0:
+            electron.spin = o.open_spin()
+            electron.data["n"] = float(valence_shell)
+            electron.data["l"] = float(o.l)
+            electron.data["m"] = float(o.m)
+            if o.add(electron):
+                self.electrons.append(electron)
+                return True
+            else:
+                print("Atom.add_to_valence_shell: Failed to add electron to existing orbital.")
+                return False
     
     for l in range(valence_shell):
         for m in range(-l, l + 1):
             if (valence_shell, l, m) not in self.ref_orbitals:
-                self.ref_orbitals[(valence_shell, l, m)] = len(self.orbitals)
                 new_orbital = orbital(valence_shell, l, m, typed.List.empty_list(particle_type))
                 self.orbitals.append(new_orbital)
+                self.ref_orbitals[(valence_shell, l, m)] = len(self.orbitals) - 1
                 if new_orbital.can_add(electron):
                     new_orbital.add(electron)
                     self.electrons.append(electron)
                     return True
-    
     return False
 
 @njit
@@ -124,6 +131,7 @@ def remove_from_valence_shell(self):
 @njit
 def covalent_bond(self, other):
     if self.stable() or other.stable():
+        print("Atom.covalent_bond: One of the atoms is stable.")
         return False
 
     valence_self = self.valence_electrons()
@@ -133,12 +141,14 @@ def covalent_bond(self, other):
     unpaired_other = [e for e in valence_other]
 
     if len(unpaired_self) == 0 or len(unpaired_other) == 0:
+        print("Atom.covalent_bond: No unpaired electrons.")
         return False
 
     electron_self = unpaired_self[0]
     electron_other = unpaired_other[0]
 
     if not self.add_to_valence_shell(electron_other) or not other.add_to_valence_shell(electron_self):
+        print("Atom.covalent_bond: Failed to add electrons to valence shell.")
         return False
 
     self.covalent_bonds.append((other.index, electron_self.index, electron_other.index))

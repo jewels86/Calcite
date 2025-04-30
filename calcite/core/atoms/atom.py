@@ -387,28 +387,6 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
     position = vector(*position) if position is not None else vector(np.nan, np.nan, np.nan)
     velocity = vector(*velocity) if velocity is not None else vector(np.nan, np.nan, np.nan)
 
-    added = 0
-    order = orbital_order(n_electrons, max_n=n_electrons/2)
-
-    for n, l in order:
-        for m in range(-l, l + 1):
-            if added >= n_electrons:
-                break
-            spin = 0.5 if added % 2 == 0 else -0.5
-            new_electron = electron(n, l, m, spin)
-            if debug_mode: 
-                print(f"Atom creation - Created electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
-            electrons.append(new_electron)
-            added += 1
-            if added < n_electrons:
-                spin = -spin
-                new_electron = electron(n, l, m, spin)
-                if debug_mode: 
-                    print(f"Atom creation - Created electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
-                electrons.append(new_electron)
-                added += 1
-
-            
     a = Atom(
         protons, neutrons, electrons,
         ref_orbitals, orbitals,
