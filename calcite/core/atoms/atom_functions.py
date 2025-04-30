@@ -1,24 +1,38 @@
 import numpy as np
-from numba import njit, typed
+from numba import njit, typed, types
 from calcite.formulas import orbital_order
 from calcite.core.particles.particle import particle_type
-from calcite.core.atoms.orbital import orbital
+from calcite.core.atoms.orbital import orbital, orbital_type
+from calcite.core.atoms.atom import orbital_key_type
 
 @njit(cache=True)
 def configure(self):
-    added = 0
+    max_n = 1
+    filled = 0
+    order = orbital_order(self.n_electrons)
+
+    self.orbitals = typed.List.empty_list(orbital_type)
+    self.ref_orbitals = typed.Dict.empty_dict(orbital_key_type, types.int64)
     
-    for e in self.electrons:
-        n = int(e.data["n"])  # Cast to int64
-        l = int(e.data["l"])  # Cast to int64
-        m = int(e.data["m"])  # Cast to int64
-        if (n, l, m) not in self.ref_orbitals:
-            self.ref_orbitals[(n, l, m)] = len(self.orbitals)
-            self.orbitals.append(orbital(n, l, m, typed.List.empty_list(particle_type)))
-        o = self.orbitals[self.ref_orbitals[(n, l, m)]]
-        o.add(e)
-    
-    
+    for n, l, m in order:
+        if filled >= self.atomic_number:
+            break
+        key = (max_n, l, m)
+        if key not in self.ref_orbitals:
+            new_orbital = orbital(max_n, l, m, typed.List.empty_list(particle_type))
+            self.orbitals.append(new_orbital)
+            self.ref_orbitals[key] = len(self.orbitals) - 1
+
+        filled += 1
+        if filled % (2 * (2 * l + 1)) == 0:
+            max_n += 1
+
+    for (n, l, m) in order:
+        key = (n, l, m)
+        if key in self.ref_orbitals:
+            o = self.orbitals[self.ref_orbitals[key]]
+            
+            
 
 @njit
 def add(self, electron):

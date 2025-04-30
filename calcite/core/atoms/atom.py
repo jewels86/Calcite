@@ -397,14 +397,14 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
             spin = 0.5 if added % 2 == 0 else -0.5
             new_electron = electron(n, l, m, spin)
             if debug_mode: 
-                print(f"Atom creation - Creating electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
+                print(f"Atom creation - Created electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
             electrons.append(new_electron)
             added += 1
             if added < n_electrons:
                 spin = -spin
                 new_electron = electron(n, l, m, spin)
                 if debug_mode: 
-                    print(f"Atom creation - Creating electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
+                    print(f"Atom creation - Created electron with quantum numbers ({n}, {l}, {m}) and spin ({'up' if spin == 0.5 else 'down'}).")
                 electrons.append(new_electron)
                 added += 1
 
