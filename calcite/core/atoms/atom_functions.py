@@ -9,13 +9,13 @@ def configure(self):
     added = 0
     
     for e in self.electrons:
-        n = float(e.data["n"])
-        l = float(e.data["l"])
-        m = float(e.data["m"])
-        if (n, l, m) not in self.orbitals:
-            self.ref_orbitals[(n, l, m)] = len(self._orbitals)
-            self.orbitals[len(self.ref_orbitals)] = orbital(n, l, m)
-        o = self.orbitals[(n, l, m)]
+        n = int(e.data["n"])  # Cast to int64
+        l = int(e.data["l"])  # Cast to int64
+        m = int(e.data["m"])  # Cast to int64
+        if (n, l, m) not in self.ref_orbitals:
+            self.ref_orbitals[(n, l, m)] = len(self.orbitals)
+            self.orbitals.append(orbital(n, l, m, typed.List.empty_list(particle_type)))
+        o = self.orbitals[self.ref_orbitals[(n, l, m)]]
         o.add(e)
     
     

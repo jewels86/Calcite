@@ -6,7 +6,7 @@ from calcite.core.particles.particle import Particle, particle_type, electron
 from calcite.core.composites.composite import proton, neutron
 from calcite.core.atoms.orbital import orbital, orbital_type
 from calcite.core.atoms.atom_functions import *
-from calcite.core.vectors.vector import vector
+from calcite.core.vectors.vector import vector, vector_type
 import numpy as np
 
 # region AtomType and Atom
@@ -348,6 +348,24 @@ structref.define_proxy(Atom, AtomType, [
     "data", "index", "debug_mode",
     "n_electrons"
 ])
+
+atom_type = AtomType(
+    fields=[
+        ("protons", types.ListType(particle_type)),
+        ("neutrons", types.ListType(particle_type)),
+        ("electrons", types.ListType(particle_type)),
+        ("ref_orbitals", types.DictType(orbital_key_type, types.int64)),
+        ("orbitals", types.ListType(orbital_type)),
+        ("ionic_bonds", types.ListType(awi_pwi)),
+        ("covalent_bonds", types.ListType(awi_pwi_pwi)),
+        ("position", vector_type),
+        ("velocity", vector_type),
+        ("data", types.DictType(types.unicode_type, types.float64)),
+        ("index", int64),
+        ("debug_mode", types.boolean),
+        ("n_electrons", int64),
+    ]
+)
 
 #  endregion
 

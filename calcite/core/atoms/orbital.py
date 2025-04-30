@@ -98,6 +98,8 @@ def Orbital_get_debug_mode(self):
 def Orbital_set_debug_mode(self, debug_mode):
     self.debug_mode = debug_mode
 
+
+
 # endregion
 # region Orbital methods
 @njit
@@ -148,5 +150,5 @@ orbital_type = OrbitalType([
 def orbital(n, l, m, electrons=None, debug_mode=False):
     if electrons is None:
         electrons = typed.List.empty_list(particle_type)
-    return Orbital(n, l, m, electrons, debug_mode)
+    return Orbital(int(n), int(l), int(m), electrons, debug_mode)  # Cast to int64
 # endregion
