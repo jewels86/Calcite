@@ -3,36 +3,32 @@ from numba import njit, typed, types
 from calcite.formulas import orbital_order
 from calcite.core.particles.particle import particle_type
 from calcite.core.atoms.orbital import orbital, orbital_type
-from calcite.core.atoms.atom import orbital_key_type
+
+
+orbital_key_type = types.Tuple((types.int64, types.int64, types.int64))
 
 @njit(cache=True)
 def configure(self):
-    max_n = 1
-    filled = 0
+    added = 0
     order = orbital_order(self.n_electrons)
 
     self.orbitals = typed.List.empty_list(orbital_type)
-    self.ref_orbitals = typed.Dict.empty_dict(orbital_key_type, types.int64)
+    self.ref_orbitals = typed.Dict.empty(orbital_key_type, types.int64)
     
-    for n, l, m in order:
-        if filled >= self.atomic_number:
-            break
-        key = (max_n, l, m)
-        if key not in self.ref_orbitals:
-            new_orbital = orbital(max_n, l, m, typed.List.empty_list(particle_type))
-            self.orbitals.append(new_orbital)
-            self.ref_orbitals[key] = len(self.orbitals) - 1
-
-        filled += 1
-        if filled % (2 * (2 * l + 1)) == 0:
-            max_n += 1
-
-    for (n, l, m) in order:
-        key = (n, l, m)
-        if key in self.ref_orbitals:
-            o = self.orbitals[self.ref_orbitals[key]]
-            
-            
+    for n, l in order:
+        for m in range(-l, l + 1):
+            o = orbital(n, l, m, typed.List.empty_list(particle_type))
+            self.orbitals.append(o)
+            self.ref_orbitals[(n, l, m)] = len(self.orbitals) - 1
+            for _ in range(2):
+                    if added < len(self.electrons):
+                        electron = self.electrons[added]
+                        if o.add(electron):
+                            if self.debug_mode: 
+                                print(f"Assigned electron with spin {'up' if electron.spin == 0.5 else 'down'} to orbital {n}, {l}, {m}")
+                            added += 1
+                    else:
+                        break
 
 @njit
 def add(self, electron):
