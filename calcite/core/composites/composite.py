@@ -52,35 +52,35 @@ class CompositeParticle(structref.StructRefProxy):
 # endregion
 # region CompositeParticle methods
 # region Fields
-@njit
+@njit(cache=True)
 def CompositeParticle_get_quarks(self):
     return self.quarks
 
-@njit
+@njit(cache=True)
 def CompositeParticle_set_quarks(self, quarks):
     self.quarks = quarks
 
-@njit
+@njit(cache=True)
 def CompositeParticle_get_position(self):
     return self.position
 
-@njit
+@njit(cache=True)
 def CompositeParticle_set_position(self, position):
     self.position = position
 
-@njit
+@njit(cache=True)
 def CompositeParticle_get_velocity(self):
     return self.velocity
 
-@njit
+@njit(cache=True)
 def CompositeParticle_set_velocity(self, velocity):
     self.velocity = velocity
 
-@njit
+@njit(cache=True)
 def CompositeParticle_get_data(self):
     return self.data
 
-@njit
+@njit(cache=True)
 def CompositeParticle_set_data(self, data):
     self.data = data
 # endregion
@@ -128,7 +128,7 @@ composite_particle_type = CompositeParticleType([
 ])
 # endregion
 # region CompositeParticle creation methods
-@njit
+@njit(cache=True)
 def proton(position=None, velocity=None):
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data['type'] = 'proton'
@@ -141,7 +141,7 @@ def proton(position=None, velocity=None):
         data
     )
 
-@njit
+@njit(cache=True)
 def neutron(position=None, velocity=None):
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     data['type'] = 'neutron'

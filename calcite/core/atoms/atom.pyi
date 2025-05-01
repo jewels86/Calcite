@@ -84,3 +84,8 @@ def atom(n_protons: int, n_neutrons: int, n_electrons: int,
     - Atom: the created atom
     """
     ...
+
+class AtomType:
+    pass
+class atom_type:
+    pass

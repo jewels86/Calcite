@@ -151,115 +151,115 @@ class Atom(structref.StructRefProxy):
 # endregion
 # region Atom functions
 # region Fields
-@njit
+@njit(cache=True)
 def Atom_get_protons(atom):
     return atom.protons
 
-@njit
+@njit(cache=True)
 def Atom_set_protons(atom, protons):
     atom.protons = protons
 
-@njit
+@njit(cache=True)
 def Atom_get_neutrons(atom):
     return atom.neutrons
 
-@njit
+@njit(cache=True)
 def Atom_set_neutrons(atom, neutrons):
     atom.neutrons = neutrons
 
-@njit
+@njit(cache=True)
 def Atom_get_electrons(atom):
     return atom.electrons
 
-@njit
+@njit(cache=True)
 def Atom_set_electrons(atom, electrons):
     atom.electrons = electrons
 
-@njit
+@njit(cache=True)
 def Atom_get_ref_orbitals(atom):
     return atom.ref_orbitals
 
-@njit
+@njit(cache=True)
 def Atom_set_ref_orbitals(atom, ref_orbitals):
     atom.ref_orbitals = ref_orbitals
 
-@njit
+@njit(cache=True)
 def Atom_get_orbitals(atom):
     return atom.orbitals
 
-@njit
+@njit(cache=True)
 def Atom_set_orbitals(atom, orbitals):
     atom.orbitals = orbitals
 
-@njit
+@njit(cache=True)
 def Atom_get_ionic_bonds(atom):
     return atom.ionic_bonds
 
-@njit
+@njit(cache=True)
 def Atom_set_ionic_bonds(atom, ionic_bonds):
     atom.ionic_bonds = ionic_bonds
 
-@njit
+@njit(cache=True)
 def Atom_get_covalent_bonds(atom):
     return atom.covalent_bonds
 
-@njit
+@njit(cache=True)
 def Atom_set_covalent_bonds(atom, covalent_bonds):
     atom.covalent_bonds = covalent_bonds
 
-@njit
+@njit(cache=True)
 def Atom_get_position(atom):
     return atom.position
 
-@njit
+@njit(cache=True)
 def Atom_set_position(atom, position):
     atom.position = position
 
-@njit
+@njit(cache=True)
 def Atom_get_velocity(atom):
     return atom.velocity
 
-@njit
+@njit(cache=True)
 def Atom_set_velocity(atom, velocity):
     atom.velocity = velocity
 
-@njit
+@njit(cache=True)
 def Atom_get_data(atom):
     return atom.data
 
-@njit
+@njit(cache=True)
 def Atom_set_data(atom, data):
     atom.data = data
 
-@njit
+@njit(cache=True)
 def Atom_get_index(atom):
     return atom.index
 
-@njit
+@njit(cache=True)
 def Atom_set_index(atom, index):
     atom.index = index
 
-@njit
+@njit(cache=True)
 def Atom_get_debug_mode(atom):
     return atom.debug_mode
 
-@njit
+@njit(cache=True)
 def Atom_set_debug_mode(atom, debug_mode):
     atom.debug_mode = debug_mode
 
-@njit
+@njit(cache=True)
 def Atom_get_n_electrons(atom):
     return atom.n_electrons
 
-@njit
+@njit(cache=True)
 def Atom_set_n_electrons(atom, n_electrons):
     atom.n_electrons = n_electrons
 
-@njit
+@njit(cache=True)
 def Atom_get_log(atom):
     return atom._debug
 
-@njit
+@njit(cache=True)
 def Atom_set_log(atom, log):
     atom._debug = log
 
@@ -370,7 +370,7 @@ atom_type = AtomType(
 #  endregion
 
 # region Atom creation functions
-@njit
+@njit(cache=True)
 def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug_mode=False, log=None):
     protons = typed.List([proton() for _ in range(n_protons)])
     neutrons = typed.List([neutron() for _ in range(n_neutrons)])

@@ -66,50 +66,51 @@ class Quark(structref.StructRefProxy):
 # endregion
 # region Quark methods
 
-@njit
+@njit(cache=True)
 def Quark_get_flavor(self):
     return self.flavor
-@njit
+
+@njit(cache=True)
 def Quark_get_charge(self):
     return self.charge
 
-@njit
+@njit(cache=True)
 def Quark_get_mass(self):
     return self.mass
 
-@njit
+@njit(cache=True)
 def Quark_get_spin(self):
     return self.spin
 
-@njit
+@njit(cache=True)
 def Quark_get_data(self):
     return self.data
 
-@njit
+@njit(cache=True)
 def Quark_get_index(self):
     return self.index
 
-@njit
+@njit(cache=True)
 def Quark_set_flavor(self, value: str):
     self.flavor = value
 
-@njit
+@njit(cache=True)
 def Quark_set_charge(self, value: float):
     self.charge = value
 
-@njit
+@njit(cache=True)
 def Quark_set_mass(self, value: float):
     self.mass = value
 
-@njit
+@njit(cache=True)
 def Quark_set_spin(self, value: float):
     self.spin = value
 
-@njit
+@njit(cache=True)
 def Quark_set_data(self, value: dict):
     self.data = value
 
-@njit
+@njit(cache=True)
 def Quark_set_index(self, value: int):
     self.index = value
 # endregion
@@ -124,7 +125,7 @@ quark_type = QuarkType([
     ('index', types.int64)
 ])
 #region Quark creation methods
-@njit
+@njit(cache=True)
 def up_quark() -> Quark:
     """
     Creates a new up quark.
@@ -135,7 +136,7 @@ def up_quark() -> Quark:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('up', 2/3, 0.0022, 0.5, data, -1)
 
-@njit
+@njit(cache=True)
 def down_quark() -> Quark:
     """
     Creates a new down quark.
@@ -146,7 +147,7 @@ def down_quark() -> Quark:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('down', -1/3, 0.0047, 0.5, data, -1)
 
-@njit
+@njit(cache=True)
 def strange_quark() -> Quark:
     """
     Creates a new strange quark.
@@ -157,7 +158,7 @@ def strange_quark() -> Quark:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('strange', -1/3, 0.093, 0.5, data, -1)
 
-@njit
+@njit(cache=True)
 def charm_quark() -> Quark:
     """
     Creates a new charm quark.
@@ -168,7 +169,7 @@ def charm_quark() -> Quark:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('charm', 2/3, 1.27, 0.5, data, -1)
 
-@njit
+@njit(cache=True)
 def top_quark() -> Quark:
     """
     Creates a new top quark.
@@ -179,7 +180,7 @@ def top_quark() -> Quark:
     data = typed.Dict.empty(types.unicode_type, types.unicode_type)
     return Quark('top', 2/3, 173.1, 0.5, data, -1)
 
-@njit
+@njit(cache=True)
 def bottom_quark() -> Quark:
     """
     Creates a new bottom quark.

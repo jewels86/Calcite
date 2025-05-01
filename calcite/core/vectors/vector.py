@@ -41,27 +41,27 @@ class Vector(structref.StructRefProxy):
 # endregion
 # region Vector methods
 # region Fields
-@njit
+@njit(cache=True)
 def Vector_get_x(self):
     return self.x
 
-@njit
+@njit(cache=True)
 def Vector_get_y(self):
     return self.y
 
-@njit
+@njit(cache=True)
 def Vector_get_z(self):
     return self.z
 
-@njit
+@njit(cache=True)
 def Vector_set_x(self, x):
     self.x = x
 
-@njit
+@njit(cache=True)
 def Vector_set_y(self, y):
     self.y = y
 
-@njit
+@njit(cache=True)
 def Vector_set_z(self, z):
     self.z = z
 # endregion
@@ -122,7 +122,7 @@ vector_type = VectorType(fields=[
 ])
 # endregion
 # region Vector creation methods
-@njit
+@njit(cache=True)
 def vector(x, y, z) -> Vector:
     """
     Creates a new vector with the given components.

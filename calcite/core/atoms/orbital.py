@@ -58,43 +58,43 @@ class Orbital(structref.StructRefProxy):
 
 # endregion
 # region Orbital fields
-@njit
+@njit(cache=True)
 def Orbital_get_n(self):
     return self.n
 
-@njit
+@njit(cache=True)
 def Orbital_set_n(self, n):
     self.n = n
 
-@njit
+@njit(cache=True)
 def Orbital_get_l(self):
     return self.l
 
-@njit
+@njit(cache=True)
 def Orbital_set_l(self, l):
     self.l = l
 
-@njit
+@njit(cache=True)
 def Orbital_get_m(self):
     return self.m
 
-@njit
+@njit(cache=True)
 def Orbital_set_m(self, m):
     self.m = m
 
-@njit
+@njit(cache=True)
 def Orbital_get_electrons(self):
     return self.electrons
 
-@njit
+@njit(cache=True)
 def Orbital_set_electrons(self, electrons):
     self.electrons = electrons
 
-@njit
+@njit(cache=True)
 def Orbital_get_debug_mode(self):
     return self.debug_mode
 
-@njit
+@njit(cache=True)
 def Orbital_set_debug_mode(self, debug_mode):
     self.debug_mode = debug_mode
 
@@ -102,16 +102,16 @@ def Orbital_set_debug_mode(self, debug_mode):
 
 # endregion
 # region Orbital methods
-@njit
+@njit(cache=True)
 def can_add(self, electron):
     if self.debug_mode: print(f"Orbital.can_add: Checking if electron with spin ({'up' if electron.spin == 0.5 else 'down'}) can be added to orbital ({self.n}, {self.l}, {self.m})")
-    if self.debug_mode: print(f"Orbital.can_add: Current electrons in orbital: {len(self.electrons)} ({('up' if self.electrons[0].spin == 0.5 else 'down') if len(self.electrons) > 0 else 'None'\
+    if self.debug_mode: print(f"Orbital.can_add: Current electrons in orbital: {len(self.electrons)} ({('up' if self.electrons[0].spin == 0.5 else 'down') if len(self.electrons) > 0 else 'None'
                                                                                                         }, {('up' if self.electrons[1].spin == 0.5 else 'down') if len(self.electrons) > 1 else 'None'})")
     can_add = len(self.electrons) < 2 and (len(self.electrons) == 0 or electron.spin != self.electrons[0].spin)
     if self.debug_mode: print(f"Orbital.can_add: can_add: {can_add}")
     return can_add
 
-@njit
+@njit(cache=True)
 def add(self, electron):
     if self.debug_mode: 
         print(f"Orbital.add: Attempting to add electron with spin ({'up' if electron.spin == 0.5 else 'down'}) to orbital ({self.n}, {self.l}, {self.m})")
@@ -157,7 +157,7 @@ orbital_type = OrbitalType([
 # endregion
 
 # region Orbital creation functions
-@njit
+@njit(cache=True)
 def orbital(n, l, m, electrons=None, debug_mode=False):
     if electrons is None:
         electrons = typed.List.empty_list(particle_type)

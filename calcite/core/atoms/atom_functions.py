@@ -31,7 +31,7 @@ def configure(self):
                     else:
                         break
 
-@njit
+@njit(cache=True)
 def add(self, electron):
     for o in self.orbitals:
         if o.can_add(electron):
@@ -40,7 +40,7 @@ def add(self, electron):
             return True
     return False
 
-@njit
+@njit(cache=True)
 def remove(self):
     if len(self.electrons) > 0:
         self.electrons.pop()
@@ -48,7 +48,7 @@ def remove(self):
         return True
     return False
 
-@njit
+@njit(cache=True)
 def remove_specific(self, electron):
     if electron.index == -1:
         return False
@@ -67,7 +67,7 @@ def remove_specific(self, electron):
         return True
     return False
 
-@njit
+@njit(cache=True)
 def valence_electrons(self):
     valence_electrons = []
     max_n = max([o.n for o in self.orbitals])
@@ -78,7 +78,7 @@ def valence_electrons(self):
 
     return valence_electrons
 
-@njit
+@njit(cache=True)
 def stable(self):
     valence_electrons = 0
     max_valence = 8 if self.n_electrons < 18 else 18
@@ -90,7 +90,7 @@ def stable(self):
     
     return valence_electrons == max_valence or valence_electrons == 0 or valence_electrons == 2
 
-@njit
+@njit(cache=True)
 def add_to_valence_shell(self, electron):
     valence_shell = max([o.n for o in self.orbitals])
     for o in self.orbitals:
@@ -118,7 +118,7 @@ def add_to_valence_shell(self, electron):
                     return True
     return False
 
-@njit
+@njit(cache=True)
 def remove_from_valence_shell(self):
     valence_shell = max([o.n for o in self.orbitals])
     for o in self.orbitals:
@@ -128,7 +128,7 @@ def remove_from_valence_shell(self):
             return True
     return False
 
-@njit
+@njit(cache=True)
 def covalent_bond(self, other):
     if self.stable() or other.stable():
         print("Atom.covalent_bond: One of the atoms is stable.")
@@ -156,7 +156,7 @@ def covalent_bond(self, other):
 
     return True
 
-@njit
+@njit(cache=True)
 def ionic_bond(self, other):
     if self.stable or other.stable:
         return False

@@ -76,59 +76,59 @@ class Particle(structref.StructRefProxy):
 # endregion
 # region Particle methods
 # region Fields
-@njit
+@njit(cache=True)
 def Particle_get_mass(self):
     return self.mass
 
-@njit
+@njit(cache=True)
 def Particle_get_charge(self):
     return self.charge
 
-@njit
+@njit(cache=True)
 def Particle_get_spin(self):
     return self.spin
 
-@njit
+@njit(cache=True)
 def Particle_get_position(self):
     return self.position
 
-@njit
+@njit(cache=True)
 def Particle_get_velocity(self):
     return self.velocity
 
-@njit
+@njit(cache=True)
 def Particle_get_data(self):
     return self.data
 
-@njit
+@njit(cache=True)
 def Particle_get_index(self):
     return self.index
 
-@njit
+@njit(cache=True)
 def Particle_set_mass(self, mass):
     self.mass = mass
 
-@njit
+@njit(cache=True)
 def Particle_set_charge(self, charge):
     self.charge = charge
 
-@njit
+@njit(cache=True)
 def Particle_set_spin(self, spin):
     self.spin = spin
 
-@njit
+@njit(cache=True)
 def Particle_set_position(self, position):
     self.position = position
 
-@njit
+@njit(cache=True)
 def Particle_set_velocity(self, velocity):
     self.velocity = velocity
 
-@njit
+@njit(cache=True)
 def Particle_set_data(self, data):
     self.data = data
 
-@njit
+@njit(cache=True)
 def Particle_set_index(self, index):
     self.index = index
 # endregion
@@ -178,7 +178,7 @@ particle_type = ParticleType(fields=[
 ])
 # endregion
 # region Particle creation methods
-@njit
+@njit(cache=True)
 def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
     """
     Creates a new electron with the given quantum numbers.
@@ -225,7 +225,7 @@ def electron(n, l, m, spin=None, position=None, velocity=None) -> Particle:
         data, -1
     )
 
-@njit
+@njit(cache=True)
 def particle(mass, charge, spin, position=None, velocity=None) -> Particle:
     """
     Creates a new particle with the given properties.
