@@ -25,7 +25,7 @@ class Particle:
     mass: float
     """The mass of the particle in atomic units."""
     charge: float
-    """The electric charge of the particle."""
+    """The charge of the particle."""
     spin: float
     """The spin of the particle."""
     position: np.ndarray

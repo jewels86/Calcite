@@ -1,7 +1,7 @@
 from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
-from calcite.core.quarks.quark import up_quark, down_quark
+from calcite.core.quarks.quark import up_quark, down_quark, quark_type
 from calcite.core.vectors.vector import vector_type, vector
 from calcite import constants
 import numpy as np
@@ -88,19 +88,28 @@ def CompositeParticle_set_data(self, data):
 @overload_method(CompositeParticleType, 'mass')
 def CompositeParticle_mass(self):
     def impl(self):
-        return sum([quark.mass for quark in self.quarks])
+        mass = 0.0
+        for quark in self.quarks:
+            mass += quark.mass
+        return mass
     return impl
 
 @overload_method(CompositeParticleType, 'charge')
 def CompositeParticle_charge(self):
     def impl(self):
-        return sum([quark.charge for quark in self.quarks])
+        charge = 0.0
+        for quark in self.quarks:
+            charge += quark.charge
+        return charge
     return impl
 
 @overload_method(CompositeParticleType, 'spin')
 def CompositeParticle_spin(self):
     def impl(self):
-        return sum([quark.spin for quark in self.quarks])
+        spin = 0.0
+        for quark in self.quarks:
+            spin += quark.spin
+        return spin / len(self.quarks)
     return impl
 
 @overload_method(CompositeParticleType, 'momentum')
@@ -121,7 +130,7 @@ structref.define_proxy(CompositeParticle, CompositeParticleType, [
     'quarks', 'position', 'velocity', 'data'
 ])
 composite_particle_type = CompositeParticleType([
-    ('quarks', types.ListType(types.float64)),
+    ('quarks', types.ListType(quark_type)),
     ('position', vector_type),
     ('velocity', vector_type),
     ('data', types.DictType(types.unicode_type, types.unicode_type))

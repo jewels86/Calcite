@@ -3,7 +3,7 @@ from numba import njit, types, typed, int64
 from numba.extending import overload_method
 from calcite.formulas import orbital_order
 from calcite.core.particles.particle import Particle, particle_type, electron
-from calcite.core.composites.composite import proton, neutron
+from calcite.core.composites.composite import proton, neutron, composite_particle_type
 from calcite.core.atoms.orbital import orbital, orbital_type
 from calcite.core.atoms.atom_functions import *
 from calcite.core.vectors.vector import vector, vector_type
@@ -337,6 +337,17 @@ def Atom_momentum(self):
         return self.mass * self.velocity
     return impl
 
+@overload_method(AtomType, "charge")
+def Atom_charge(self):
+    def impl(self):
+        charge = 0.0
+        for e in self.electrons:
+            charge += e.charge
+        for p in self.protons:
+            charge += p.charge()
+        return charge
+    return impl
+
 # endregion
 # endregion
 
@@ -351,8 +362,8 @@ structref.define_proxy(Atom, AtomType, [
 
 atom_type = AtomType(
     fields=[
-        ("protons", types.ListType(particle_type)),
-        ("neutrons", types.ListType(particle_type)),
+        ("protons", types.ListType(composite_particle_type)),
+        ("neutrons", types.ListType(composite_particle_type)),
         ("electrons", types.ListType(particle_type)),
         ("ref_orbitals", types.DictType(orbital_key_type, types.int64)),
         ("orbitals", types.ListType(orbital_type)),
@@ -380,7 +391,7 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
     ionic_bonds = typed.List.empty_list(awi_pwi)
     covalent_bonds = typed.List.empty_list(awi_pwi_pwi)
     index = -1
-    data = typed.Dict.empty(types.unicode_type, types.unicode_type)
+    data = typed.Dict.empty(types.unicode_type, types.float64)
     n_electrons = n_electrons
     if debug_mode: print(f"Creating atom with {n_protons} protons, {n_neutrons} neutrons, and {n_electrons} electrons.")
     

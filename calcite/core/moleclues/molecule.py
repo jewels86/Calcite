@@ -3,6 +3,7 @@ from numba import njit, types, typed
 from calcite.core.atoms.atom import Atom, atom_type
 from calcite.core.vectors.vector import vector, vector_type
 from numba.extending import overload_method
+import numpy as np
 
 @structref.register
 class MoleculeType(types.StructRef):
@@ -81,13 +82,13 @@ def Molecule_get_debug_mode(molecule):
 def Molecule_set_debug_mode(molecule, debug_mode):
     molecule.debug_mode = debug_mode
 
-@overload_method(MoleculeType, "add_atom")
+@overload_method(MoleculeType, "add")
 def Molecule_add_atom(self, atom):
     def impl(self, atom):
         self.atoms.append(atom)
     return impl
 
-@overload_method(MoleculeType, "calculate_mass")
+@overload_method(MoleculeType, "mass")
 def Molecule_calculate_mass(self):
     def impl(self):
         return sum(atom.mass for atom in self.atoms)
@@ -100,6 +101,15 @@ def Molecule_get_all_bonds(self):
         for atom in self.atoms:
             bonds.extend(atom.covalent_bonds)
         return bonds
+    return impl
+
+@overload_method(MoleculeType, "charge")
+def Molecule_charge(self):
+    def impl(self):
+        total_charge = 0.0
+        for atom in self.atoms:
+            total_charge += atom.charge()
+        return total_charge
     return impl
 
 structref.define_proxy(Molecule, MoleculeType, [
@@ -116,10 +126,14 @@ molecule_type = MoleculeType(
 )
 
 @njit(cache=True)
-def molecule(atoms=None, bonds=None, position=None, velocity=None, debug_mode=False):
-    if atoms is not None: atoms = typed.List(atoms)
-    atoms = typed.List.empty_list(atom_type) if atoms is None else atoms
-    bonds = typed.List.empty_list(types.Tuple((types.int64, types.int64))) if bonds is None else bonds
-    position = vector(*position) if position is not None else vector(0.0, 0.0, 0.0)
-    velocity = vector(*velocity) if velocity is not None else vector(0.0, 0.0, 0.0)
-    return Molecule(atoms, bonds, position, velocity, debug_mode)
+def molecule(atoms=None, position=None, velocity=None, debug_mode=False):
+    if atoms is not None:
+        atoms = typed.List.empty_list(atom_type)
+        for atom in atoms:
+            atoms.append(atom)
+    else:
+        atoms = typed.List.empty_list(atom_type)
+
+    position = vector(*position) if position is not None else vector(np.nan, np.nan, np.nan)
+    velocity = vector(*velocity) if velocity is not None else vector(np.nan, np.nan, np.nan)
+    return Molecule(atoms, position, velocity, debug_mode)
