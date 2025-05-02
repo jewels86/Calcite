@@ -128,12 +128,12 @@ molecule_type = MoleculeType(
 @njit(cache=True)
 def molecule(atoms=None, position=None, velocity=None, debug_mode=False):
     if atoms is not None:
-        atoms = typed.List.empty_list(atom_type)
+        _atoms = typed.List.empty_list(atom_type)
         for atom in atoms:
-            atoms.append(atom)
+            _atoms.append(atom)
     else:
-        atoms = typed.List.empty_list(atom_type)
+        _atoms = typed.List.empty_list(atom_type)
 
     position = vector(*position) if position is not None else vector(np.nan, np.nan, np.nan)
     velocity = vector(*velocity) if velocity is not None else vector(np.nan, np.nan, np.nan)
-    return Molecule(atoms, position, velocity, debug_mode)
+    return Molecule(_atoms, position, velocity, debug_mode)
