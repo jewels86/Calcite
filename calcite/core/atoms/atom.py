@@ -22,7 +22,7 @@ awi_pwi_pwi = types.Tuple((types.int64, types.int64, types.int64))
 
 class Atom(structref.StructRefProxy):
     def __new__(cls, protons, neutrons, electrons, ref_orbitals, orbitals, ionic_bonds, 
-                covalent_bonds, position, velocity, data, index, debug_mode, n_electrons, log):
+                covalent_bonds, position, velocity, data, index, debug_mode, n_electrons, symbol):
         if isinstance(position, (list, np.ndarray)):
             position = vector(position)
         if isinstance(velocity, (list, np.ndarray)):
@@ -33,7 +33,7 @@ class Atom(structref.StructRefProxy):
             ref_orbitals, orbitals,
             ionic_bonds, covalent_bonds,
             position, velocity, data, index,
-            debug_mode, n_electrons, log
+            debug_mode, n_electrons, symbol
         )
     
     @property
@@ -147,6 +147,14 @@ class Atom(structref.StructRefProxy):
     @n_electrons.setter
     def n_electrons(self, n_electrons):
         Atom_set_n_electrons(self, n_electrons)
+
+    @property
+    def symbol(self):
+        return Atom_get_symbol(self)
+    
+    @symbol.setter
+    def symbol(self, symbol):
+        Atom_set_symbol(self, symbol)
 
 # endregion
 # region Atom functions
@@ -263,6 +271,14 @@ def Atom_get_log(atom):
 def Atom_set_log(atom, log):
     atom._debug = log
 
+@njit(cache=True)
+def Atom_get_symbol(atom):
+    return atom.symbol
+
+@njit(cache=True)
+def Atom_set_symbol(atom, symbol):
+    atom.symbol = symbol
+
 # endregion
 # region Methods
 @overload_method(AtomType, "configure")
@@ -370,7 +386,7 @@ structref.define_proxy(Atom, AtomType, [
     "ionic_bonds", "covalent_bonds",
     "position", "velocity",
     "data", "index", "debug_mode",
-    "n_electrons"
+    "n_electrons", "symbol"
 ])
 
 atom_type = AtomType(
@@ -388,6 +404,7 @@ atom_type = AtomType(
         ("index", int64),
         ("debug_mode", types.boolean),
         ("n_electrons", int64),
+        ("symbol", types.unicode_type),
     ]
 )
 
@@ -395,7 +412,7 @@ atom_type = AtomType(
 
 # region Atom creation functions
 @njit(cache=True)
-def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug_mode=False, log=None):
+def atom(n_protons, n_neutrons, n_electrons, symbol="UNNAMED", position=None, velocity=None, debug_mode=False):
     protons = typed.List([proton() for _ in range(n_protons)])
     neutrons = typed.List([neutron() for _ in range(n_neutrons)])
     electrons = typed.List.empty_list(particle_type)
@@ -416,7 +433,7 @@ def atom(n_protons, n_neutrons, n_electrons, position=None, velocity=None, debug
         ref_orbitals, orbitals,
         ionic_bonds, covalent_bonds,
         position, velocity, data, 
-        index, debug_mode, n_electrons
+        index, debug_mode, n_electrons, symbol
     )
     
     a.configure()

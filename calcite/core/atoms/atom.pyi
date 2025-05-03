@@ -39,6 +39,7 @@ class Atom:
     protons: List[Particle]
     neutrons: List[Particle]
     electrons: List[Particle]
+    symbol: str
     ref_orbitals: Dict[Tuple[int, int, int], int]
     orbitals: List[Orbital]
     ionic_bonds: List[Tuple[int, int]]
@@ -65,6 +66,7 @@ class Atom:
     def charge(self) -> float: ...
 
 def atom(n_protons: int, n_neutrons: int, n_electrons: int, 
+         symbol: str,
          position: Optional[Vector] = None, 
          velocity: Optional[Vector] = None, 
          debug_mode: bool = False, 

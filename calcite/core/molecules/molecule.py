@@ -115,6 +115,31 @@ def Molecule_charge(self):
         return total_charge
     return impl
 
+@overload_method(MoleculeType, "formula")
+def Molecule_formula(self):
+    def impl(self):
+        formula = {}
+        for atom in self.atoms:
+            if atom.symbol in formula:
+                formula[atom.symbol] += 1
+            else:
+                formula[atom.symbol] = 1
+        return dict(sorted(formula.items()))
+    return impl
+
+@overload_method(MoleculeType, "formula_str") 
+def Molecule_formula_str(self):
+    def impl(self):
+        formula = self.formula()
+        formula_str = ""
+        for atom, count in formula.items():
+            if count > 1:
+                formula_str += f"{atom}{count}"
+            else:
+                formula_str += atom
+        return formula_str
+    return impl
+
 structref.define_proxy(Molecule, MoleculeType, [
     "atoms", "position", "velocity", "debug_mode"
 ])
