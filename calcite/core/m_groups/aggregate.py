@@ -2,7 +2,7 @@ from numba.experimental import structref
 from numba import njit, types, typed
 from numba.extending import overload_method
 from calcite.core.molecules.molecule import Molecule, molecule_type
-from calcite.core.vectors.vector import vector, vector_type
+from calcite.core.vectors.vector import vector, vector_type, vector_xyz
 import numpy as np
 
 @structref.register
@@ -120,12 +120,12 @@ def Aggregate_total_charge(self):
 def Aggregate_center_of_mass(self):
     def impl(self):
         total_mass = 0.0
-        weighted_sum = vector(0.0, 0.0, 0.0)
+        weighted_sum = np.array([0.0, 0.0, 0.0])
         for molecule in self.molecules:
             m = molecule.mass()
             total_mass += m
-            weighted_sum += molecule.position.xyz * m
-        return vector(*(weighted_sum / total_mass)) if total_mass > 0 else vector(0.0, 0.0, 0.0)
+            weighted_sum += molecule.position.xyz() * m
+        return vector_xyz((weighted_sum / total_mass)) if total_mass > 0 else vector(0.0, 0.0, 0.0)
     return impl
 
 structref.define_proxy(Aggregate, AggregateType, [
@@ -154,5 +154,5 @@ def aggregate(molecules=None, position=None, velocity=None, data=None, debug_mod
     position = vector(*position) if position is not None else vector(np.nan, np.nan, np.nan)
     velocity = vector(*velocity) if velocity is not None else vector(np.nan, np.nan, np.nan)
     if data is None:
-        data = typed.Dict.empty(key_type=types.unicode_type, value_type=types.unicode_type)
+        data = typed.Dict.empty(key_type=types.unicode_type, value_type=types.float64)
     return Aggregate(_molecules, position, velocity, data, debug_mode)

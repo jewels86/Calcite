@@ -142,5 +142,18 @@ def vector(x, y, z) -> Vector:
         Vector: A new vector object
     """
     return Vector(x, y, z)
+
+@njit(cache=True)
+def vector_xyz(xyz) -> Vector:
+    """
+    Creates a new vector with the given components.
+
+    Args:
+        xyz (tuple): A iterable containing the x, y, and z components of the vector.
+
+    Returns:
+        Vector: A new vector object
+    """
+    return Vector(xyz[0], xyz[1], xyz[2])
 # endregion
 

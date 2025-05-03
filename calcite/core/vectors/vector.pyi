@@ -61,6 +61,16 @@ Args:
 Returns:
     Vector: A new vector object
 """
+def vector_xyz(xyz: tuple[float, float, float]) -> Vector: ...
+"""
+Creates a new vector from a tuple of x, y, z components.
+
+Args:
+    xyz (tuple[float, float, float]): A tuple containing the x, y, and z components of the vector.
+
+Returns:
+    Vector: A new vector object
+"""
 
 vector_type = VectorType
 """The type of a vector object."""
