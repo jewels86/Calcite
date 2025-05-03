@@ -89,9 +89,12 @@ def Molecule_add_atom(self, atom):
     return impl
 
 @overload_method(MoleculeType, "mass")
-def Molecule_calculate_mass(self):
+def Molecule_mass(self):
     def impl(self):
-        return sum(atom.mass for atom in self.atoms)
+        mass = 0.0
+        for atom in self.atoms:
+            mass += atom.mass()
+        return mass
     return impl
 
 @overload_method(MoleculeType, "bonds")

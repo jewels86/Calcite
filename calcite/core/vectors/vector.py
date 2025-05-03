@@ -110,6 +110,12 @@ def Vector_unit(self):
         mag = self.magnitude()
         return Vector(self.x / mag, self.y / mag, self.z / mag)
     return impl
+
+@overload_method(VectorType, 'xyz')
+def Vector_xyz(self):
+    def impl(self):
+        return np.array([self.x, self.y, self.z])
+    return impl
 # endregion
 # endregion
 

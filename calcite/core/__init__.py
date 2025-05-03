@@ -7,5 +7,7 @@ from calcite.core.composites.composite import CompositeParticle, proton, neutron
 from calcite.core.atoms.orbital import Orbital, orbital_type, orbital
 from calcite.core.atoms.atom import Atom, AtomType, atom, atom_type
 from calcite.core.vectors.vector import Vector, VectorType, vector, vector_type
-from calcite.core.moleclues.molecule import Molecule, molecule, MoleculeType, \
+from calcite.core.molecules.molecule import Molecule, molecule, MoleculeType, \
     molecule_type
+from calcite.core.m_groups.aggregate import Aggregate, aggregate, AggregateType, \
+    aggregate_type

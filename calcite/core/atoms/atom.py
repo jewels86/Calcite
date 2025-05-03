@@ -348,6 +348,19 @@ def Atom_charge(self):
         return charge
     return impl
 
+@overload_method(AtomType, "mass")
+def Atom_mass(self):
+    def impl(self):
+        mass = 0.0
+        for p in self.protons:
+            mass += p.mass()
+        for n in self.neutrons:
+            mass += n.mass()
+        for e in self.electrons:
+            mass += e.mass
+        return mass
+    return impl
+
 # endregion
 # endregion
 
