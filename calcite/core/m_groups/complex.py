@@ -132,9 +132,10 @@ def Complex_center_of_mass(self):
 def Complex_intermolecular_bonds(self):
     def impl(self):
         intermolecular_bonds = []
+        atom_ids = [atom.id for molecule in self.molecules for atom in molecule.atoms()]
         for molecule in self.molecules:
             for bond in molecule.bonds():
-                if bond[0] in self.molecules:
+                if bond[0] in atom_ids:
                     intermolecular_bonds.append(bond)
         intermolecular_bonds = typed.List(intermolecular_bonds)
         return intermolecular_bonds
