@@ -134,8 +134,9 @@ def Complex_intermolecular_bonds(self):
         intermolecular_bonds = []
         for molecule in self.molecules:
             for bond in molecule.bonds():
-                if bond[]
-
+                if bond[0] in self.molecules:
+                    intermolecular_bonds.append(bond)
+        intermolecular_bonds = typed.List(intermolecular_bonds)
         return intermolecular_bonds
     return impl
 
