@@ -5,10 +5,13 @@
 #ifndef ELECTRON_H
 #define ELECTRON_H
 #include "../Particle.h"
+#include "../../math/ScaledDouble.h"
 
 namespace particles {
     class Electron : public particles::Particle {
-    public
+    public:
+        [[nodiscard]] math::double_sc charge() const override;
+        [[nodiscard]] math::double_sc spin() const override;
     };
 }
 #endif //ELECTRON_H

@@ -12,12 +12,10 @@
 
 namespace particles {
 
-class Particle : public Physical {
+class Particle : public core::Physical {
 public:
-    virtual ~Particle() = default;
-
-    virtual double charge() const = 0;
-    virtual double spin() const = 0;
+    [[nodiscard]] virtual math::double_sc charge() const = 0;
+    [[nodiscard]] virtual math::double_sc spin() const = 0;
 };
 
 } // core

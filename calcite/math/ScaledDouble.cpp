@@ -235,4 +235,12 @@ namespace math {
         return result;
     }
 
+    template<typename U>
+    Quantity<U> ScaledDouble::operator*(const Quantity<U> &quantity) const {
+        return Quantity<U>(mantissa * quantity.value, exponent + quantity.unit.exponent);
+    }
+    template<typename U>
+    Quantity<U> ScaledDouble::operator/(const Quantity<U> &quantity) const {
+        return Quantity<U>(mantissa / quantity.value, exponent - quantity.unit.exponent);
+    }
 } // math

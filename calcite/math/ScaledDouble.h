@@ -4,6 +4,7 @@
 
 #ifndef SCALEDDOUBLE_H
 #define SCALEDDOUBLE_H
+#include "Quantity.h"
 
 namespace math {
 
@@ -53,7 +54,12 @@ namespace math {
 
         ScaledDouble operator-() const;
 
-        double toDouble() const;
+        [[nodiscard]] double toDouble() const;
+
+        template<typename U>
+        Quantity<U> operator*(const Quantity<U> & quantity) const;
+        template<typename U>
+        Quantity<U> operator/(const Quantity<U> & quantity) const;
     };
     using double_sc = math::ScaledDouble;
 } // math
