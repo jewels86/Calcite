@@ -4,15 +4,7 @@
 
 #include "Particle.h"
 
-namespace core {
+namespace particles {
 
-
-    math::Vector3 Particle::position(const double t) {
-        return this->positions[t / this->deltaTime];
-    }
-
-    math::Vector3 Particle::velocity(const double t) {
-        return this->velocities[t / this->deltaTime];
-    }
 
 } // core

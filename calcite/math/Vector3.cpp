@@ -1,10 +1,11 @@
 ﻿#include "Vector3.h"
+#include "scfuncs.cpp"
 
 namespace math {
 
 Vector3::Vector3() : x(0), y(0), z(0) {}
 
-Vector3::Vector3(const double x, const double y, const double z)
+Vector3::Vector3(const double_sc x, const double_sc y, const double_sc z)
     : x(x), y(y), z(z) {}
 
 Vector3::Vector3(const Vector3 &v)
@@ -18,11 +19,11 @@ Vector3 Vector3::operator-(const Vector3 &v) const {
     return Vector3(x - v.x, y - v.y, z - v.z);
 }
 
-Vector3 Vector3::operator*(const double scalar) const {
+Vector3 Vector3::operator*(const double_sc &scalar) const {
     return Vector3(x * scalar, y * scalar, z * scalar);
 }
 
-Vector3 Vector3::operator/(const double scalar) const {
+Vector3 Vector3::operator/(const double_sc &scalar) const {
     if (scalar == 0) {
         throw std::runtime_error("Division by zero in Vector3 division");
     }
@@ -43,14 +44,14 @@ Vector3 Vector3::operator-=(const Vector3 &v) {
     return *this;
 }
 
-Vector3 Vector3::operator*=(const double scalar) {
+Vector3 Vector3::operator*=(const double_sc &scalar) {
     x *= scalar;
     y *= scalar;
     z *= scalar;
     return *this;
 }
 
-Vector3 Vector3::operator/=(const double scalar) {
+Vector3 Vector3::operator/=(const double_sc &scalar) {
     if (scalar == 0) {
         throw std::runtime_error("Division by zero in Vector3 division");
     }
@@ -72,7 +73,7 @@ bool Vector3::operator!=(const Vector3 &v) const {
     return !(*this == v);
 }
 
-double Vector3::operator[](const int index) const {
+double_sc Vector3::operator[](const int index) const {
     if (index < 0 || index > 2) {
         throw std::out_of_range("Index out of range in Vector3");
     }
@@ -84,7 +85,7 @@ double Vector3::operator[](const int index) const {
     }
 }
 
-double Vector3::operator[](const char index) const {
+double_sc Vector3::operator[](const char index) const {
     switch (index) {
         case 'x': return x;
         case 'y': return y;
@@ -93,7 +94,7 @@ double Vector3::operator[](const char index) const {
     }
 }
 
-double Vector3::dot(const Vector3 &v) const {
+double_sc Vector3::dot(const Vector3 &v) const {
     return x * v.x + y * v.y + z * v.z;
 }
 
@@ -105,12 +106,12 @@ Vector3 Vector3::cross(const Vector3 &v) const {
     );
 }
 
-double Vector3::length() const {
-    return std::sqrt(x * x + y * y + z * z);
+double_sc Vector3::length() const {
+    return sqrt(x * x + y * y + z * z);
 }
 
 Vector3 Vector3::normalize() const {
-    const double len = length();
+    const double_sc len = length();
     if (len == 0) {
         throw std::runtime_error("Cannot normalize a zero-length vector");
     }
